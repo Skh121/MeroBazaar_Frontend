@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "../../../store/lib/authStore";
+import { useLogin } from "../../../hooks/useAuth";
 import LoginImage from "../../../assets/images/login.png";
 import LoginLogo from "../../../assets/images/LoginLogo.svg";
 
@@ -10,24 +10,21 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [agreed, setAgreed] = useState(false);
 
   const navigate = useNavigate();
-  const { login, loading, error } = useAuthStore();
+  const { mutate: login, isPending, error } = useLogin();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!agreed) {
-      return;
-    }
-
-    try {
-      const data = await login(email, password);
-      navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
-    } catch (err) {
-      // Error is handled by the store
-    }
+    login(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
+        },
+      }
+    );
   };
 
   return (
@@ -108,18 +105,7 @@ const LoginPage = () => {
 
           {error && (
             <div className="p-3 mb-4 text-sm font-medium text-red-800 bg-red-100 rounded-lg">
-              {error}
-            </div>
-          )}
-          {!agreed && email && password && (
-            <div className="p-3 mb-4 text-sm font-medium text-amber-800 bg-amber-100 rounded-lg">
-              You must agree to the Terms of Service and Privacy Policy to sign
-              in.
-            </div>
-          )}
-          {loading && (
-            <div className="p-3 mb-4 text-sm font-medium text-blue-800 bg-blue-100 rounded-lg">
-              Signing in...
+              {error.response?.data?.message || "Login failed"}
             </div>
           )}
 
@@ -180,54 +166,23 @@ const LoginPage = () => {
                 />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="text-sm text-merogreen hover:underline font-medium"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Sign In Button */}
             <button
               type="submit"
-              disabled={loading || !agreed}
+              disabled={isPending}
               className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition mt-2
-                ${
-                  loading || !agreed
-                    ? "bg-green-400 cursor-not-allowed"
-                    : "bg-merogreen hover:bg-green-700"
-                }`}
+                ${isPending ? "bg-green-400" : " hover:bg-green-700"}`}
             >
-              {loading ? "Processing..." : "Sign In"}
+              {isPending ? "Processing..." : "Sign In"}
             </button>
-
-            {/* Agreement */}
-            <div className="flex items-start justify-center pt-2">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="h-4 w-4 mt-0.5 text-merogreen border-gray-300 rounded focus:ring-merogreen shrink-0"
-              />
-              <label className="ml-2 text-sm text-gray-500 text-center">
-                By signing in, you agree to our{" "}
-                <a
-                  href="#"
-                  className="text-merogreen hover:underline font-medium"
-                >
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="#"
-                  className="text-merogreen hover:underline font-medium"
-                >
-                  Privacy Policy
-                </a>
-                .
-              </label>
-            </div>
           </form>
         </div>
       </div>

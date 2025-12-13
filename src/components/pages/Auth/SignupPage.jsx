@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "../../../store/lib/authStore";
+import { useSignup } from "../../../hooks/useAuth";
 import SignupLogo from "../../../assets/images/SignupLogo.svg";
 import SignupImage from "../../../assets/images/signup.png";
 
@@ -16,9 +16,9 @@ const SignupPage = () => {
   const [localError, setLocalError] = useState("");
 
   const navigate = useNavigate();
-  const { signup, loading, error } = useAuthStore();
+  const { mutate: signup, isPending, error } = useSignup();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLocalError("");
 
@@ -34,15 +34,17 @@ const SignupPage = () => {
       return;
     }
 
-    try {
-      const data = await signup(fullName, email, password);
-      navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
-    } catch (err) {
-      // Error is handled by the store
-    }
+    signup(
+      { fullName, email, password },
+      {
+        onSuccess: (data) => {
+          navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
+        },
+      }
+    );
   };
 
-  const displayError = localError || error;
+  const displayError = localError || (error && (error.response?.data?.message || "Signup failed"));
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -124,7 +126,7 @@ const SignupPage = () => {
               {displayError}
             </div>
           )}
-          {loading && (
+          {isPending && (
             <div className="p-3 mb-4 text-sm font-medium text-blue-800 bg-blue-100 rounded-lg">
               Creating account...
             </div>
@@ -251,15 +253,15 @@ const SignupPage = () => {
             {/* Create Account Button */}
             <button
               type="submit"
-              disabled={loading || !agreed}
+              disabled={isPending || !agreed}
               className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition mt-1
                 ${
-                  loading || !agreed
+                  isPending || !agreed
                     ? "bg-green-400 cursor-not-allowed"
                     : "bg-merogreen hover:bg-green-700"
                 }`}
             >
-              {loading ? "Processing..." : "Create Account"}
+              {isPending ? "Processing..." : "Create Account"}
             </button>
           </form>
         </div>
