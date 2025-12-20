@@ -1,87 +1,37 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { MapPin, ArrowRight, Heart } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { MapPin, ArrowRight, Loader2 } from "lucide-react";
+import axios from "axios";
+import SpecialtyCard from "../shared/SpecialtyCard";
 
-const specialties = [
-  {
-    id: 1,
-    name: "Nepal Tea Leaves (Ilam)",
-    description: "Finest Orthodox tea leaves grown in the misty hills of eastern Nepal.",
-    district: "Ilam",
-    province: "Province 1",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Nepal Tea Leaves (Ilam)",
-    description: "Finest Orthodox tea leaves grown in the misty hills of eastern Nepal.",
-    district: "Ilam",
-    province: "Province 1",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Nepal Tea Leaves (Ilam)",
-    description: "Finest Orthodox tea leaves grown in the misty hills of eastern Nepal.",
-    district: "Ilam",
-    province: "Province 1",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Nepal Tea Leaves (Ilam)",
-    description: "Finest Orthodox tea leaves grown in the misty hills of eastern Nepal.",
-    district: "Ilam",
-    province: "Province 1",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-  },
-];
-
-const SpecialtyCard = ({ specialty }) => {
-  return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow group">
-      {/* Image */}
-      <div className="relative h-40 overflow-hidden">
-        <span className="absolute top-3 left-3 bg-merogreen text-white text-xs font-medium px-2 py-1 rounded-md z-10 flex items-center gap-1">
-          <MapPin size={12} />
-          {specialty.district}
-        </span>
-        <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full hover:bg-white transition-colors z-10">
-          <Heart size={16} className="text-gray-400 hover:text-red-500" />
-        </button>
-        <img
-          src={specialty.image}
-          alt={specialty.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-sm mb-1">
-          {specialty.name}
-        </h3>
-        <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-          {specialty.description}
-        </p>
-
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-gray-900">Rs.{specialty.price}</span>
-          <button className="text-merogreen text-xs font-medium hover:underline flex items-center gap-1">
-            View Details
-            <ArrowRight size={12} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const RegionalSpecialties = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchRegionalProducts();
+  }, []);
+
+  const fetchRegionalProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/products/regional?limit=4`);
+      setProducts(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch regional products:", error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
   return (
     <section className="bg-white py-12">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
@@ -100,11 +50,31 @@ const RegionalSpecialties = () => {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {specialties.map((specialty) => (
-            <SpecialtyCard key={specialty.id} specialty={specialty} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 size={32} className="text-merogreen animate-spin" />
+          </div>
+        ) : products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {products.map((product) => (
+              <SpecialtyCard
+                key={product._id}
+                product={product}
+                onClick={handleProductClick}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <MapPin size={48} className="mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">
+              No regional specialties available yet
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              Discover unique products from different regions of Nepal!
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

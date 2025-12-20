@@ -1,40 +1,46 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Utensils, Shirt, Palette, Wheat, MilkOff } from "lucide-react";
+
+// Import category images
+import foodsImg from "../../assets/images/category/foods.png";
+import textilesImg from "../../assets/images/category/textiles.png";
+import handicraftsImg from "../../assets/images/category/handicrafts.png";
+import agricultureImg from "../../assets/images/category/agriculture.png";
+import dairyImg from "../../assets/images/category/dairy.png";
 
 const categories = [
   {
     name: "Food & Spices",
-    icon: Utensils,
+    image: foodsImg,
     href: "/shop?category=food-spices",
   },
   {
     name: "Textiles",
-    icon: Shirt,
+    image: textilesImg,
     href: "/shop?category=textiles",
   },
   {
     name: "Handicrafts",
-    icon: Palette,
+    image: handicraftsImg,
     href: "/shop?category=handicrafts",
   },
   {
     name: "Agriculture",
-    icon: Wheat,
+    image: agricultureImg,
     href: "/shop?category=agriculture",
   },
   {
     name: "Dairy & Cheese",
-    icon: MilkOff,
+    image: dairyImg,
     href: "/shop?category=dairy-cheese",
   },
 ];
 
 const CategoriesSection = () => {
   return (
-    <section className="bg-white py-12">
+    <section className="bg-white py-10">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-5">
           Shop by Category
         </h2>
 
@@ -43,12 +49,16 @@ const CategoriesSection = () => {
             <Link
               key={category.name}
               to={category.href}
-              className="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-green-50 hover:border-merogreen border-2 border-transparent transition-all group"
+              className="flex flex-col items-center justify-center py-10 px-8 border-t border-gray-100 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                <category.icon className="w-6 h-6 text-gray-600 group-hover:text-merogreen transition-colors" />
+              <div className="w-12 h-12 flex items-center justify-center mb-3">
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="mt-3 text-sm font-medium text-gray-700 group-hover:text-merogreen transition-colors text-center">
+              <span className="text-sm font-medium text-gray-700 group-hover:text-merogreen transition-colors text-center">
                 {category.name}
               </span>
             </Link>

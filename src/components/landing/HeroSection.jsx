@@ -6,22 +6,47 @@ import HeroImage from "../../assets/images/hero.png";
 const HeroSection = () => {
   return (
     <section
-      className="py-8 lg:py-8"
-      style={{ background: "linear-gradient(to right, #FFFBEB 0%, #FFF7ED 50%, #F0FDF4 100%)" }}
+      className="min-h-[calc(100vh-5rem)] flex items-center py-8 lg:py-0"
+      style={{
+        background:
+          "linear-gradient(to right, #FFFBEB 0%, #FFF7ED 50%, #F0FDF4 100%)",
+      }}
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full py-6 lg:py-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Content */}
-          <div className="order-2 lg:order-1 h-full flex flex-col justify-around gap-1">
-            <h1 className="text-4xl lg:text-6xl font-semibold leading-tight">
+          <div className="order-2 lg:order-1 h-full flex flex-col justify-around gap-1 lg:gap-0">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-medium leading-tight">
               Discover Nepal's{" "}
-              <span className="text-merogreen">Finest Local Products</span>
+              <span className="lg:hidden text-merogreen">
+                Finest Local Products
+              </span>
+              <br className="hidden lg:block" />
+              <span className="hidden lg:inline text-merogreen">
+                Finest Local
+              </span>
+              <br className="hidden lg:block" />
+              <span className="hidden lg:inline text-merogreen">Products</span>
             </h1>
 
-            <p className="mt-4 text-gray-600 text-base lg:text-lg leading-relaxed">
-              Connect directly with authentic vendors across all 77 districts.
-              From Himalayan handicrafts to Terai's fresh produce. Experience
-              Nepal's diversity delivered to your doorstep.
+            <p className="mt-4 lg:mt-6 text-gray-600 text-base lg:text-lg leading-relaxed lg:max-w-xl">
+              <span className="lg:hidden">
+                Connect directly with authentic vendors across all 77 districts.
+                From Himalayan handicrafts to Terai's fresh produce. Experience
+                Nepal's diversity delivered to your doorstep.
+              </span>
+              <span className="hidden lg:inline">
+                Connect directly with authentic vendors
+                <br />
+                across all 77 districts.
+                <br />
+                From{" "}
+                <span className="font-semibold">
+                  Himalayan handicrafts to Terai's fresh produce.
+                </span>
+                <br />
+                Experience Nepal's diversity delivered to your doorstep.
+              </span>
             </p>
 
             {/* CTA Buttons */}
@@ -47,7 +72,9 @@ const HeroSection = () => {
                   <BadgeCheck className="w-5 h-5 text-merogreen" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">100% Authentic</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    100% Authentic
+                  </p>
                   <p className="text-gray-500 text-xs">Verified Sources</p>
                 </div>
               </div>
@@ -57,7 +84,9 @@ const HeroSection = () => {
                   <Truck className="w-5 h-5 text-merogreen" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">Fast Delivery</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    Fast Delivery
+                  </p>
                   <p className="text-gray-500 text-xs">All 77 Districts</p>
                 </div>
               </div>
@@ -65,8 +94,8 @@ const HeroSection = () => {
           </div>
 
           {/* Right Image */}
-          <div className="order-1 lg:order-2 relative">
-            <div className="relative">
+          <div className="order-1 lg:order-2 relative lg:flex lg:items-center lg:justify-center lg:py-10">
+            <div className="relative lg:max-w-xl lg:mx-auto">
               {/* Mountain decoration */}
               <svg
                 className="absolute -top-4 -right-4 w-full h-auto text-gray-100 -z-10"
@@ -79,7 +108,7 @@ const HeroSection = () => {
               <img
                 src={HeroImage}
                 alt="Authentic Nepali Products"
-                className="w-full h-auto rounded-2xl shadow-lg object-cover"
+                className="w-full h-auto lg:aspect-16/10 rounded-2xl shadow-lg object-cover"
               />
             </div>
           </div>
