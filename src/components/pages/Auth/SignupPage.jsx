@@ -38,13 +38,16 @@ const SignupPage = () => {
       { fullName, email, password },
       {
         onSuccess: (data) => {
-          navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
+          navigate(
+            data.role === "admin" ? "/admin/dashboard" : "/customer/home"
+          );
         },
       }
     );
   };
 
-  const displayError = localError || (error && (error.response?.data?.message || "Signup failed"));
+  const displayError =
+    localError || (error && (error.response?.data?.message || "Signup failed"));
 
   return (
     <div className="flex h-screen overflow-hidden">

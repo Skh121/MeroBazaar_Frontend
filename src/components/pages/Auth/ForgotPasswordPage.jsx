@@ -1,7 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, KeyRound, Lock, Eye, EyeOff, Check, ArrowRight, ArrowLeft } from "lucide-react";
-import { useForgotPassword, useVerifyOTP, useResetPassword } from "../../../hooks/useAuth";
+import {
+  Mail,
+  KeyRound,
+  Lock,
+  Eye,
+  EyeOff,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
+import {
+  useForgotPassword,
+  useVerifyOTP,
+  useResetPassword,
+} from "../../../hooks/useAuth";
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1);
@@ -19,8 +32,10 @@ const ForgotPasswordPage = () => {
   const verifyOTP = useVerifyOTP();
   const resetPassword = useResetPassword();
 
-  const isPending = forgotPassword.isPending || verifyOTP.isPending || resetPassword.isPending;
-  const apiError = forgotPassword.error || verifyOTP.error || resetPassword.error;
+  const isPending =
+    forgotPassword.isPending || verifyOTP.isPending || resetPassword.isPending;
+  const apiError =
+    forgotPassword.error || verifyOTP.error || resetPassword.error;
 
   const handleSendOTP = (e) => {
     e.preventDefault();
@@ -35,10 +50,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setLocalError("");
 
-    verifyOTP.mutate(
-      { email, otp },
-      { onSuccess: () => setStep(3) }
-    );
+    verifyOTP.mutate({ email, otp }, { onSuccess: () => setStep(3) });
   };
 
   const handleResetPassword = (e) => {
@@ -76,7 +88,9 @@ const ForgotPasswordPage = () => {
     }
   };
 
-  const displayError = localError || (apiError && (apiError.response?.data?.message || "An error occurred"));
+  const displayError =
+    localError ||
+    (apiError && (apiError.response?.data?.message || "An error occurred"));
 
   const StepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -84,9 +98,10 @@ const ForgotPasswordPage = () => {
         <React.Fragment key={num}>
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all
-              ${step > num
-                ? "bg-merogreen text-white"
-                : step === num
+              ${
+                step > num
+                  ? "bg-merogreen text-white"
+                  : step === num
                   ? "bg-merogreen text-white"
                   : "bg-gray-200 text-gray-500"
               }`}
@@ -139,7 +154,9 @@ const ForgotPasswordPage = () => {
         {step === 1 && (
           <>
             <StepIcon icon={Mail} />
-            <h2 className="text-xl font-semibold text-center mb-2">Forgot Password?</h2>
+            <h2 className="text-xl font-semibold text-center mb-2">
+              Forgot Password?
+            </h2>
             <p className="text-gray-500 text-center text-sm mb-6">
               Enter your email address and we'll send you an OTP
             </p>
@@ -163,7 +180,11 @@ const ForgotPasswordPage = () => {
                 type="submit"
                 disabled={isPending}
                 className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition flex items-center justify-center gap-2
-                  ${isPending ? "bg-green-400 cursor-not-allowed" : "bg-green-700"}`}
+                  ${
+                    isPending
+                      ? "bg-green-400 cursor-not-allowed"
+                      : "bg-green-700"
+                  }`}
               >
                 {isPending ? "Sending..." : "Send OTP"}
                 {!isPending && <ArrowRight size={18} />}
@@ -171,7 +192,10 @@ const ForgotPasswordPage = () => {
             </form>
 
             <div className="text-center mt-4">
-              <Link to="/login" className="text-sm text-gray-500 hover:text-merogreen">
+              <Link
+                to="/login"
+                className="text-sm text-gray-500 hover:text-merogreen"
+              >
                 Back to Login
               </Link>
             </div>
@@ -182,7 +206,9 @@ const ForgotPasswordPage = () => {
         {step === 2 && (
           <>
             <StepIcon icon={KeyRound} />
-            <h2 className="text-xl font-semibold text-center mb-2">Enter OTP</h2>
+            <h2 className="text-xl font-semibold text-center mb-2">
+              Enter OTP
+            </h2>
             <p className="text-gray-500 text-center text-sm mb-6">
               We've sent a 6-digit code to {email}
             </p>
@@ -196,7 +222,9 @@ const ForgotPasswordPage = () => {
                   type="text"
                   placeholder="000000"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   required
                   maxLength={6}
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm text-center tracking-widest font-mono"
@@ -207,7 +235,11 @@ const ForgotPasswordPage = () => {
                 type="submit"
                 disabled={isPending || otp.length !== 6}
                 className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition flex items-center justify-center gap-2
-                  ${isPending || otp.length !== 6 ? "bg-green-400 cursor-not-allowed" : "bg-merogreen hover:bg-green-700"}`}
+                  ${
+                    isPending || otp.length !== 6
+                      ? "bg-green-400 cursor-not-allowed"
+                      : "bg-merogreen hover:bg-green-700"
+                  }`}
               >
                 {isPending ? "Verifying..." : "Verify OTP"}
                 {!isPending && <ArrowRight size={18} />}
@@ -237,7 +269,9 @@ const ForgotPasswordPage = () => {
         {step === 3 && (
           <>
             <StepIcon icon={Lock} />
-            <h2 className="text-xl font-semibold text-center mb-2">Reset Password</h2>
+            <h2 className="text-xl font-semibold text-center mb-2">
+              Reset Password
+            </h2>
             <p className="text-gray-500 text-center text-sm mb-6">
               Create a strong new password for your account
             </p>
@@ -295,7 +329,11 @@ const ForgotPasswordPage = () => {
                 type="submit"
                 disabled={isPending}
                 className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition flex items-center justify-center gap-2
-                  ${isPending ? "bg-green-400 cursor-not-allowed" : "bg-merogreen hover:bg-green-700"}`}
+                  ${
+                    isPending
+                      ? "bg-green-400 cursor-not-allowed"
+                      : "bg-merogreen hover:bg-green-700"
+                  }`}
               >
                 {isPending ? "Resetting..." : "Reset Password"}
                 {!isPending && <ArrowRight size={18} />}

@@ -21,7 +21,7 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: (data) => {
-          navigate(data.role === "admin" ? "/admin/dashboard" : "/customer/home");
+          navigate(data.role === "admin" ? "/admin/dashboard" : "/");
         },
       }
     );
@@ -178,8 +178,12 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isPending}
-              className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition mt-2
-                ${isPending ? "bg-green-400" : " hover:bg-green-700"}`}
+              className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition mt-2 cursor-pointer
+                ${
+                  isPending
+                    ? "bg-green-400 cursor-not-allowed"
+                    : "bg-merogreen hover:bg-green-700"
+                }`}
             >
               {isPending ? "Processing..." : "Sign In"}
             </button>
