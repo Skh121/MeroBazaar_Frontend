@@ -2,9 +2,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-merogreen: #016630;
+  /* Primary brand color */
+  --color-merogreen: #00A63E;
+  --color-primary: #00A63E;
+
+  /* Status colors */
+  --color-success: #16A34A;
+  --color-danger: #DC2626;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* Neutral colors */
+  --color-dark: #0F172A;
+  --color-light: #F8FAFC;
+  --color-muted: #94A3B8;
+
+  /* Font family */
+  --font-outfit: "Outfit", sans-serif;
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Outfit", sans-serif;
 }

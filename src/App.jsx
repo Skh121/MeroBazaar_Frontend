@@ -1,11 +1,40 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+
+// Customer Auth Pages
 import SignupPage from "./components/pages/Auth/SignupPage.jsx";
 import LoginPage from "./components/pages/Auth/LoginPage.jsx";
 import ForgotPasswordPage from "./components/pages/Auth/ForgotPasswordPage.jsx";
+
+// Landing Page
 import LandingPage from "./components/pages/LandingPage.jsx";
 
-// These are where users are sent after successful login/signup
+// Static Pages
+import AboutPage from "./components/pages/AboutPage.jsx";
+import ContactPage from "./components/pages/ContactPage.jsx";
+
+// Product Pages
+import ProductDetails from "./components/pages/ProductDetails.jsx";
+
+// User Pages
+import ProfilePage from "./components/pages/ProfilePage.jsx";
+import CartPage from "./components/pages/CartPage.jsx";
+import WishlistPage from "./components/pages/WishlistPage.jsx";
+import OrderSuccessPage from "./components/pages/OrderSuccessPage.jsx";
+
+// Vendor Pages
+import VendorLoginPage from "./components/pages/Vendor/VendorLoginPage.jsx";
+import VendorSignupPage from "./components/pages/Vendor/VendorSignupPage.jsx";
+import VendorRegistrationSuccess from "./components/pages/Vendor/VendorRegistrationSuccess.jsx";
+import VendorDashboard from "./components/pages/Vendor/VendorDashboard.jsx";
+
+// Admin Pages
+import AdminDashboard from "./components/pages/Admin/AdminDashboard.jsx";
+
+// Protected Route Components
+import { VendorRoute, AdminRoute } from "./components/auth/ProtectedRoute.jsx";
+
+// Customer Home placeholder
 const CustomerHome = () => (
   <div className="text-center p-10 bg-white shadow-lg m-10 rounded-xl">
     <h1 className="text-4xl font-bold text-merogreen">Welcome, Customer!</h1>
@@ -17,27 +46,13 @@ const CustomerHome = () => (
     </p>
   </div>
 );
-const AdminDashboard = () => (
-  <div className="text-center p-10 bg-white shadow-lg m-10 rounded-xl">
-    <h1 className="text-4xl font-bold text-red-700">Welcome, Admin!</h1>
-    <p className="text-gray-600 mt-4">
-      Login successful. Full system control panel access granted.{" "}
-      <Link to="/" className="text-merogreen hover:underline font-semibold">
-        Go to Landing Page
-      </Link>
-    </p>
-  </div>
-);
 
-/**
- * Main application component handling all routing.
- */
 function App() {
   return (
     <BrowserRouter>
       <div className="App min-h-screen bg-gray-50">
         <Routes>
-          {/* Public Authentication Routes */}
+          {/* Public Authentication Routes (Customer & Admin use same login) */}
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -45,9 +60,140 @@ function App() {
           {/* Main Landing/Home Page */}
           <Route path="/" element={<LandingPage />} />
 
-          {/* Authenticated/Role-Based Routes */}
+          {/* Static Pages */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+
+          {/* Customer Routes */}
           <Route path="/customer/home" element={<CustomerHome />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+          {/* Product Routes */}
+          <Route path="/product/:id" element={<ProductDetails />} />
+
+          {/* User Profile Routes */}
+          <Route path="/profile" element={<ProfilePage />} />
+
+          {/* Cart & Wishlist Routes */}
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route
+            path="/order-success/:orderNumber"
+            element={<OrderSuccessPage />}
+          />
+
+          {/* Vendor Public Routes */}
+          <Route path="/vendor/login" element={<VendorLoginPage />} />
+          <Route path="/vendor/register" element={<VendorSignupPage />} />
+          <Route
+            path="/vendor/registration-success"
+            element={<VendorRegistrationSuccess />}
+          />
+
+          {/* Vendor Protected Routes */}
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <VendorRoute>
+                <VendorDashboard />
+              </VendorRoute>
+            }
+          />
+          <Route
+            path="/vendor/products"
+            element={
+              <VendorRoute>
+                <VendorDashboard />
+              </VendorRoute>
+            }
+          />
+          <Route
+            path="/vendor/orders"
+            element={
+              <VendorRoute>
+                <VendorDashboard />
+              </VendorRoute>
+            }
+          />
+          <Route
+            path="/vendor/analytics"
+            element={
+              <VendorRoute>
+                <VendorDashboard />
+              </VendorRoute>
+            }
+          />
+          <Route
+            path="/vendor/settings"
+            element={
+              <VendorRoute>
+                <VendorDashboard />
+              </VendorRoute>
+            }
+          />
+
+          {/* Admin login redirects to main login */}
+          <Route
+            path="/admin/login"
+            element={<Navigate to="/login" replace />}
+          />
+
+          {/* Admin Protected Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/vendors"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/customers"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/messages"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
