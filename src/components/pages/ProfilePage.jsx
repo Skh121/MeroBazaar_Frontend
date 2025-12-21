@@ -11,6 +11,9 @@ import {
   Loader2,
   Calendar,
   ChevronDown,
+  ShoppingBag,
+  Package,
+  Eye,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "../layout/Navbar";
@@ -57,6 +60,10 @@ const ProfilePage = () => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  // Orders State
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -105,6 +112,27 @@ const ProfilePage = () => {
     }
   };
 
+  const fetchOrders = async () => {
+    try {
+      setOrdersLoading(true);
+      const response = await axios.get(`${API_URL}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(response.data);
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  // Fetch orders when orders tab is selected
+  useEffect(() => {
+    if (activeTab === "orders" && orders.length === 0) {
+      fetchOrders();
+    }
+  }, [activeTab]);
+
   const handlePersonalInfoChange = (e) => {
     setPersonalInfo({ ...personalInfo, [e.target.name]: e.target.value });
   };
@@ -114,7 +142,8 @@ const ProfilePage = () => {
       setSaving(true);
       setMessage({ type: "", text: "" });
 
-      const fullName = `${personalInfo.firstName} ${personalInfo.lastName}`.trim();
+      const fullName =
+        `${personalInfo.firstName} ${personalInfo.lastName}`.trim();
 
       await axios.put(
         `${API_URL}/users/profile`,
@@ -151,11 +180,9 @@ const ProfilePage = () => {
       setSaving(true);
       setMessage({ type: "", text: "" });
 
-      await axios.post(
-        `${API_URL}/users/addresses`,
-        newAddress,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post(`${API_URL}/users/addresses`, newAddress, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setNewAddress({
         label: "Home",
@@ -228,13 +255,17 @@ const ProfilePage = () => {
   const getMemberSince = () => {
     if (user?.createdAt) {
       const date = new Date(user.createdAt);
-      return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      return date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
     }
     return "January 2024";
   };
 
   const tabs = [
     { id: "personal", label: "Personal Information", icon: User },
+    { id: "orders", label: "My Orders", icon: ShoppingBag },
     { id: "addresses", label: "Addresses", icon: MapPin },
     { id: "security", label: "Security", icon: Lock },
   ];
@@ -345,7 +376,10 @@ const ProfilePage = () => {
 
                     {loading ? (
                       <div className="flex justify-center py-12">
-                        <Loader2 size={32} className="text-merogreen animate-spin" />
+                        <Loader2
+                          size={32}
+                          className="text-merogreen animate-spin"
+                        />
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -449,7 +483,9 @@ const ProfilePage = () => {
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="other">Other</option>
-                                <option value="prefer_not_to_say">Prefer not to say</option>
+                                <option value="prefer_not_to_say">
+                                  Prefer not to say
+                                </option>
                               </select>
                               <ChevronDown
                                 size={18}
@@ -458,6 +494,142 @@ const ProfilePage = () => {
                             </div>
                           </div>
                         </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Orders Tab */}
+                {activeTab === "orders" && (
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                      My Orders
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                      Track and manage your orders
+                    </p>
+
+                    {ordersLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2
+                          size={32}
+                          className="text-merogreen animate-spin"
+                        />
+                      </div>
+                    ) : orders.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Package
+                          size={48}
+                          className="text-gray-300 mx-auto mb-4"
+                        />
+                        <p className="text-gray-500">
+                          You haven't placed any orders yet
+                        </p>
+                        <button
+                          onClick={() => navigate("/")}
+                          className="mt-4 px-6 py-2 bg-merogreen text-white rounded-lg hover:bg-green-700 transition"
+                        >
+                          Start Shopping
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {orders.map((order) => (
+                          <div
+                            key={order._id}
+                            className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+                              <div>
+                                <p className="font-semibold text-gray-800">
+                                  {order.orderNumber}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {new Date(order.createdAt).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    }
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    order.orderStatus === "delivered"
+                                      ? "bg-green-100 text-green-700"
+                                      : order.orderStatus === "shipped"
+                                      ? "bg-purple-100 text-purple-700"
+                                      : order.orderStatus === "processing"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : order.orderStatus === "cancelled"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                  }`}
+                                >
+                                  {order.orderStatus.charAt(0).toUpperCase() +
+                                    order.orderStatus.slice(1)}
+                                </span>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    order.paymentStatus === "paid"
+                                      ? "bg-green-100 text-green-700"
+                                      : order.paymentStatus === "failed"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                  }`}
+                                >
+                                  {order.paymentStatus === "paid"
+                                    ? "Paid"
+                                    : order.paymentStatus === "failed"
+                                    ? "Payment Failed"
+                                    : "Payment Pending"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Order Items Preview */}
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {order.items.slice(0, 3).map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg"
+                                >
+                                  <span className="text-sm text-gray-700">
+                                    {item.name}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    x{item.quantity}
+                                  </span>
+                                </div>
+                              ))}
+                              {order.items.length > 3 && (
+                                <span className="text-sm text-gray-500 px-3 py-1.5">
+                                  +{order.items.length - 3} more
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                              <p className="font-semibold text-merogreen">
+                                Rs.{order.total}
+                              </p>
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `/order-success/${order.orderNumber}`
+                                  )
+                                }
+                                className="flex items-center gap-1 text-sm text-merogreen hover:underline"
+                              >
+                                <Eye size={16} />
+                                View Details
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -492,8 +664,8 @@ const ProfilePage = () => {
                               )}
                             </div>
                             <p className="text-gray-600 text-sm">
-                              {address.street}, {address.city}, {address.district},{" "}
-                              {address.province}
+                              {address.street}, {address.city},{" "}
+                              {address.district}, {address.province}
                             </p>
                           </div>
                         ))}
@@ -514,7 +686,10 @@ const ProfilePage = () => {
                             <select
                               value={newAddress.label}
                               onChange={(e) =>
-                                setNewAddress({ ...newAddress, label: e.target.value })
+                                setNewAddress({
+                                  ...newAddress,
+                                  label: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                             >
@@ -531,7 +706,10 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.street}
                               onChange={(e) =>
-                                setNewAddress({ ...newAddress, street: e.target.value })
+                                setNewAddress({
+                                  ...newAddress,
+                                  street: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter street address"
@@ -547,7 +725,10 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.city}
                               onChange={(e) =>
-                                setNewAddress({ ...newAddress, city: e.target.value })
+                                setNewAddress({
+                                  ...newAddress,
+                                  city: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter city"
@@ -561,7 +742,10 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.district}
                               onChange={(e) =>
-                                setNewAddress({ ...newAddress, district: e.target.value })
+                                setNewAddress({
+                                  ...newAddress,
+                                  district: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter district"
@@ -574,7 +758,10 @@ const ProfilePage = () => {
                             <select
                               value={newAddress.province}
                               onChange={(e) =>
-                                setNewAddress({ ...newAddress, province: e.target.value })
+                                setNewAddress({
+                                  ...newAddress,
+                                  province: e.target.value,
+                                })
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                             >
@@ -585,7 +772,9 @@ const ProfilePage = () => {
                               <option value="Gandaki">Gandaki</option>
                               <option value="Lumbini">Lumbini</option>
                               <option value="Karnali">Karnali</option>
-                              <option value="Sudurpashchim">Sudurpashchim</option>
+                              <option value="Sudurpashchim">
+                                Sudurpashchim
+                              </option>
                             </select>
                           </div>
                         </div>
@@ -629,7 +818,10 @@ const ProfilePage = () => {
                           type="password"
                           value={security.currentPassword}
                           onChange={(e) =>
-                            setSecurity({ ...security, currentPassword: e.target.value })
+                            setSecurity({
+                              ...security,
+                              currentPassword: e.target.value,
+                            })
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Enter current password"
@@ -643,7 +835,10 @@ const ProfilePage = () => {
                           type="password"
                           value={security.newPassword}
                           onChange={(e) =>
-                            setSecurity({ ...security, newPassword: e.target.value })
+                            setSecurity({
+                              ...security,
+                              newPassword: e.target.value,
+                            })
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Enter new password"
@@ -657,7 +852,10 @@ const ProfilePage = () => {
                           type="password"
                           value={security.confirmPassword}
                           onChange={(e) =>
-                            setSecurity({ ...security, confirmPassword: e.target.value })
+                            setSecurity({
+                              ...security,
+                              confirmPassword: e.target.value,
+                            })
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Confirm new password"

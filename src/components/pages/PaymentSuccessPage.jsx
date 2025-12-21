@@ -53,9 +53,7 @@ const PaymentSuccessPage = () => {
     } catch (error) {
       console.error("Payment verification error:", error);
       setStatus("error");
-      setMessage(
-        error.response?.data?.message || "Failed to verify payment"
-      );
+      setMessage(error.response?.data?.message || "Failed to verify payment");
     }
   };
 
@@ -82,17 +80,15 @@ const PaymentSuccessPage = () => {
 
           {status === "success" && (
             <>
-              <CheckCircle
-                size={64}
-                className="text-merogreen mx-auto mb-4"
-              />
+              <CheckCircle size={64} className="text-merogreen mx-auto mb-4" />
               <h1 className="text-xl font-semibold text-gray-800 mb-2">
                 Payment Successful!
               </h1>
               <p className="text-gray-500 mb-6">{message}</p>
               {orderNumber && (
                 <p className="text-sm text-gray-600 mb-6">
-                  Order Number: <span className="font-semibold">{orderNumber}</span>
+                  Order Number:{" "}
+                  <span className="font-semibold">{orderNumber}</span>
                 </p>
               )}
               <div className="flex flex-col gap-3">
@@ -114,10 +110,7 @@ const PaymentSuccessPage = () => {
 
           {status === "error" && (
             <>
-              <XCircle
-                size={64}
-                className="text-red-500 mx-auto mb-4"
-              />
+              <XCircle size={64} className="text-red-500 mx-auto mb-4" />
               <h1 className="text-xl font-semibold text-gray-800 mb-2">
                 Payment Verification Failed
               </h1>
