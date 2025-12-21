@@ -33,7 +33,7 @@ const RegionalSpecialties = () => {
   };
 
   return (
-    <section className="bg-white py-12">
+    <section className="bg-white py-8">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -55,7 +55,7 @@ const RegionalSpecialties = () => {
             <Loader2 size={32} className="text-merogreen animate-spin" />
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 xl:gap-12">
             {products.map((product) => (
               <SpecialtyCard
                 key={product._id}

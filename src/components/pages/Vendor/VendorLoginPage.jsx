@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useVendorLogin } from "../../../hooks/useAuth";
+import Logo from "../../../assets/images/Logo.svg";
 
 const VendorLoginPage = () => {
   const [email, setEmail] = useState("");
@@ -31,14 +32,11 @@ const VendorLoginPage = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <h1 className="text-3xl font-bold">
-              <span className="text-merogreen">M</span>
-              <span className="text-gray-800">ero</span>
-              <span className="text-merogreen">B</span>
-              <span className="text-gray-800">azaar</span>
-            </h1>
+            <img src={Logo} alt="MeroBazaar" className="h-10 mx-auto" />
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-800 mt-4">Welcome Back!</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mt-4">
+            Welcome Back!
+          </h2>
           <p className="text-gray-500 mt-1">Sign in to your vendor dashboard</p>
         </div>
 
@@ -118,7 +116,11 @@ const VendorLoginPage = () => {
               type="submit"
               disabled={isPending}
               className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition cursor-pointer
-                ${isPending ? "bg-green-400 cursor-not-allowed" : "bg-merogreen hover:bg-green-700"}`}
+                ${
+                  isPending
+                    ? "bg-green-400 cursor-not-allowed"
+                    : "bg-merogreen hover:bg-green-700"
+                }`}
             >
               {isPending ? "Signing In..." : "Sign In"}
             </button>

@@ -90,10 +90,10 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-[74px]">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={Logo} alt="MeroBazaar" className="h-10 w-auto" />
+            <img src={Logo} alt="MeroBazaar" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -102,7 +102,7 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className="text-gray-600 hover:text-merogreen transition-colors text-sm font-medium"
+                className="text-gray-600 hover:text-merogreen transition-colors text-md font-medium"
               >
                 {link.name}
               </Link>

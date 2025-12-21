@@ -128,10 +128,9 @@ const CartPage = () => {
   };
 
   // Calculate totals
-  const subtotal = cart?.items?.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  ) || 0;
+  const subtotal =
+    cart?.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
+    0;
   const shipping = subtotal >= 1000 ? 0 : 100;
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + shipping + tax;
@@ -158,10 +157,12 @@ const CartPage = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      <main className="flex-1 py-8">
+      <main className="flex-1 py-6">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           {/* Header */}
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Shopping Cart</h1>
+          <h1 className="text-2xl font-medium text-gray-800 mb-6 text-center">
+            Shopping Cart
+          </h1>
 
           {/* Step Indicator */}
           <div className="flex items-center justify-center mb-8">
@@ -200,12 +201,14 @@ const CartPage = () => {
 
           {/* Step 1: Cart Items */}
           {step === 1 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Cart Items */}
-              <div className="lg:col-span-2 space-y-4">
-                {!cart?.items?.length ? (
-                  <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                    <ShoppingCart size={64} className="text-gray-300 mx-auto mb-4" />
+            <>
+              {!cart?.items?.length ? (
+                <div className="flex items-center justify-center">
+                  <div className="bg-white rounded-xl shadow-sm p-8 text-center max-w-md">
+                    <ShoppingCart
+                      size={64}
+                      className="text-gray-300 mx-auto mb-4"
+                    />
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">
                       Your cart is empty
                     </h2>
@@ -219,136 +222,153 @@ const CartPage = () => {
                       Continue Shopping
                     </Link>
                   </div>
-                ) : (
-                  cart.items.map((item) => (
-                    <div
-                      key={item.product._id}
-                      className="bg-white rounded-xl shadow-sm p-4 flex gap-4"
-                    >
-                      {/* Product Image */}
-                      <div className="w-28 h-28 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                        {item.product.images?.[0] ? (
-                          <img
-                            src={getImageUrl(item.product.images[0].url)}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package size={32} className="text-gray-300" />
-                          </div>
-                        )}
-                      </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Cart Items */}
+                  <div className="lg:col-span-2 space-y-4">
+                    {cart.items.map((item) => (
+                      <div
+                        key={item.product._id}
+                        className="bg-white rounded-xl shadow-sm p-4 flex gap-4"
+                      >
+                        {/* Product Image */}
+                        <div className="w-28 h-28 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                          {item.product.images?.[0] ? (
+                            <img
+                              src={getImageUrl(item.product.images[0].url)}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package size={32} className="text-gray-300" />
+                            </div>
+                          )}
+                        </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1">
+                        {/* Product Details */}
+                        <div className="flex-1">
+                          <div className="flex justify-between">
+                            <div>
+                              <h3 className="font-semibold text-gray-800">
+                                {item.product.name}
+                              </h3>
+                              <p className="text-sm text-gray-500">
+                                {item.product.vendor?.businessName ||
+                                  "MeroBazaar"}
+                              </p>
+                              <p className="text-merogreen font-semibold mt-1">
+                                Rs.{item.price}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => removeItem(item.product._id)}
+                              className="text-gray-400 hover:text-red-500 transition"
+                            >
+                              <X size={20} />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-4">
+                            {/* Quantity Controls */}
+                            <div className="flex items-center border border-gray-300 rounded-lg">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.product._id,
+                                    item.quantity - 1
+                                  )
+                                }
+                                disabled={item.quantity <= 1 || updating}
+                                className="p-2 hover:bg-gray-100 transition disabled:opacity-50"
+                              >
+                                <Minus size={16} />
+                              </button>
+                              <span className="w-10 text-center font-medium">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.product._id,
+                                    item.quantity + 1
+                                  )
+                                }
+                                disabled={
+                                  item.quantity >= item.product.stock ||
+                                  updating
+                                }
+                                className="p-2 hover:bg-gray-100 transition disabled:opacity-50"
+                              >
+                                <Plus size={16} />
+                              </button>
+                            </div>
+
+                            {/* Item Total */}
+                            <p className="font-semibold text-gray-800">
+                              Rs.{item.price * item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        Order Summary
+                      </h2>
+
+                      <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
-                          <div>
-                            <h3 className="font-semibold text-gray-800">
-                              {item.product.name}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                              {item.product.vendor?.businessName || "MeroBazaar"}
-                            </p>
-                            <p className="text-merogreen font-semibold mt-1">
-                              Rs.{item.price}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => removeItem(item.product._id)}
-                            className="text-gray-400 hover:text-red-500 transition"
+                          <span className="text-gray-600">Subtotal</span>
+                          <span className="font-medium">Rs.{subtotal}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Shipping</span>
+                          <span
+                            className={
+                              shipping === 0
+                                ? "text-merogreen font-medium"
+                                : "font-medium"
+                            }
                           >
-                            <X size={20} />
-                          </button>
+                            {shipping === 0 ? "FREE" : `Rs.${shipping}`}
+                          </span>
                         </div>
-
-                        <div className="flex items-center justify-between mt-4">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center border border-gray-300 rounded-lg">
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.product._id, item.quantity - 1)
-                              }
-                              disabled={item.quantity <= 1 || updating}
-                              className="p-2 hover:bg-gray-100 transition disabled:opacity-50"
-                            >
-                              <Minus size={16} />
-                            </button>
-                            <span className="w-10 text-center font-medium">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.product._id, item.quantity + 1)
-                              }
-                              disabled={
-                                item.quantity >= item.product.stock || updating
-                              }
-                              className="p-2 hover:bg-gray-100 transition disabled:opacity-50"
-                            >
-                              <Plus size={16} />
-                            </button>
-                          </div>
-
-                          {/* Item Total */}
-                          <p className="font-semibold text-gray-800">
-                            Rs.{item.price * item.quantity}
-                          </p>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tax (5%)</span>
+                          <span className="font-medium">Rs.{tax}</span>
+                        </div>
+                        <div className="border-t pt-3 flex justify-between">
+                          <span className="font-semibold">Total</span>
+                          <span className="font-bold text-merogreen text-lg">
+                            Rs.{total}
+                          </span>
                         </div>
                       </div>
+
+                      <button
+                        onClick={() => setStep(2)}
+                        className="w-full mt-6 py-3 bg-merogreen text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                      >
+                        Proceed to Checkout
+                      </button>
+
+                      <Link
+                        to="/shop"
+                        className="block w-full mt-3 py-3 border-2 border-merogreen text-merogreen rounded-lg font-semibold text-center hover:bg-green-50 transition"
+                      >
+                        Continue Shopping
+                      </Link>
                     </div>
-                  ))
-                )}
-              </div>
-
-              {/* Order Summary */}
-              {cart?.items?.length > 0 && (
-                <div className="lg:col-span-1">
-                  <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                      Order Summary
-                    </h2>
-
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Subtotal</span>
-                        <span className="font-medium">Rs.{subtotal}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Shipping</span>
-                        <span className={shipping === 0 ? "text-merogreen font-medium" : "font-medium"}>
-                          {shipping === 0 ? "FREE" : `Rs.${shipping}`}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Tax (5%)</span>
-                        <span className="font-medium">Rs.{tax}</span>
-                      </div>
-                      <div className="border-t pt-3 flex justify-between">
-                        <span className="font-semibold">Total</span>
-                        <span className="font-bold text-merogreen text-lg">
-                          Rs.{total}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setStep(2)}
-                      className="w-full mt-6 py-3 bg-merogreen text-white rounded-lg font-semibold hover:bg-green-700 transition"
-                    >
-                      Proceed to Checkout
-                    </button>
-
-                    <Link
-                      to="/shop"
-                      className="block w-full mt-3 py-3 border-2 border-merogreen text-merogreen rounded-lg font-semibold text-center hover:bg-green-50 transition"
-                    >
-                      Continue Shopping
-                    </Link>
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* Step 2: Shipping */}
@@ -545,15 +565,21 @@ const CartPage = () => {
                       className="w-4 h-4 text-merogreen"
                     />
                     <div className="ml-3">
-                      <p className="font-medium text-gray-800">Cash on Delivery</p>
-                      <p className="text-sm text-gray-500">Pay when you receive</p>
+                      <p className="font-medium text-gray-800">
+                        Cash on Delivery
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Pay when you receive
+                      </p>
                     </div>
                   </label>
                 </div>
 
                 {/* Order Summary */}
                 <div className="mt-8">
-                  <h3 className="font-semibold text-gray-800 mb-4">Order Summary</h3>
+                  <h3 className="font-semibold text-gray-800 mb-4">
+                    Order Summary
+                  </h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Subtotal</span>
@@ -561,7 +587,13 @@ const CartPage = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
-                      <span className={shipping === 0 ? "text-merogreen font-medium" : "font-medium"}>
+                      <span
+                        className={
+                          shipping === 0
+                            ? "text-merogreen font-medium"
+                            : "font-medium"
+                        }
+                      >
                         {shipping === 0 ? "FREE" : `Rs.${shipping}`}
                       </span>
                     </div>

@@ -24,7 +24,7 @@ const features = [
 
 const WhyChooseSection = () => {
   return (
-    <section className="bg-gray-50 py-12">
+    <section className="bg-gray-50 py-8">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <h2 className="text-xl font-semibold text-gray-900 text-center mb-10">
           Why Choose MeroBazaar?

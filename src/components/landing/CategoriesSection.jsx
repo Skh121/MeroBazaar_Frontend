@@ -38,7 +38,7 @@ const categories = [
 
 const CategoriesSection = () => {
   return (
-    <section className="bg-white py-10">
+    <section className="bg-white py-8">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <h2 className="text-base font-semibold text-gray-800 mb-5">
           Shop by Category

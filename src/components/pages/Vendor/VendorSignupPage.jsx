@@ -15,6 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useVendorSignup } from "../../../hooks/useAuth";
+import Logo from "../../../assets/images/Logo.svg";
 
 const STEPS = [
   { id: 1, title: "Business Information", icon: Building2 },
@@ -79,7 +80,12 @@ const VendorSignupPage = () => {
     setLocalError("");
     switch (step) {
       case 1:
-        if (!formData.businessName || !formData.category || !formData.panNumber || !formData.phone) {
+        if (
+          !formData.businessName ||
+          !formData.category ||
+          !formData.panNumber ||
+          !formData.phone
+        ) {
           setLocalError("Please fill all required fields");
           return false;
         }
@@ -149,7 +155,9 @@ const VendorSignupPage = () => {
     });
   };
 
-  const displayError = localError || (error && (error.response?.data?.message || "Registration failed"));
+  const displayError =
+    localError ||
+    (error && (error.response?.data?.message || "Registration failed"));
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
@@ -157,15 +165,14 @@ const VendorSignupPage = () => {
         {/* Logo */}
         <div className="text-center mb-6">
           <Link to="/" className="inline-block">
-            <h1 className="text-3xl font-bold">
-              <span className="text-merogreen">M</span>
-              <span className="text-gray-800">ero</span>
-              <span className="text-merogreen">B</span>
-              <span className="text-gray-800">azaar</span>
-            </h1>
+            <img src={Logo} alt="MeroBazaar" className="h-10 mx-auto" />
           </Link>
-          <h2 className="text-xl font-semibold text-gray-800 mt-3">Become a Vendor</h2>
-          <p className="text-gray-500 text-sm">Join Nepal's leading marketplace</p>
+          <h2 className="text-xl font-semibold text-gray-800 mt-3">
+            Become a Vendor
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Join Nepal's leading marketplace
+          </p>
         </div>
 
         {/* Form Card */}
@@ -183,20 +190,38 @@ const VendorSignupPage = () => {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
                         ${isCompleted ? "bg-merogreen text-white" : ""}
-                        ${isCurrent ? "bg-merogreen text-white ring-4 ring-green-100" : ""}
-                        ${!isCompleted && !isCurrent ? "bg-gray-200 text-gray-500" : ""}`}
+                        ${
+                          isCurrent
+                            ? "bg-merogreen text-white ring-4 ring-green-100"
+                            : ""
+                        }
+                        ${
+                          !isCompleted && !isCurrent
+                            ? "bg-gray-200 text-gray-500"
+                            : ""
+                        }`}
                     >
-                      {isCompleted ? <Check size={18} /> : <StepIcon size={18} />}
+                      {isCompleted ? (
+                        <Check size={18} />
+                      ) : (
+                        <StepIcon size={18} />
+                      )}
                     </div>
                     <span
-                      className={`text-xs mt-2 hidden sm:block ${isCurrent ? "text-merogreen font-medium" : "text-gray-500"}`}
+                      className={`text-xs mt-2 hidden sm:block ${
+                        isCurrent
+                          ? "text-merogreen font-medium"
+                          : "text-gray-500"
+                      }`}
                     >
                       {step.title}
                     </span>
                   </div>
                   {index < STEPS.length - 1 && (
                     <div
-                      className={`w-12 sm:w-20 h-0.5 mx-2 ${currentStep > step.id ? "bg-merogreen" : "bg-gray-200"}`}
+                      className={`w-12 sm:w-20 h-0.5 mx-2 ${
+                        currentStep > step.id ? "bg-merogreen" : "bg-gray-200"
+                      }`}
                     />
                   )}
                 </React.Fragment>
@@ -218,7 +243,9 @@ const VendorSignupPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Building2 className="w-5 h-5 text-merogreen" />
-                  <h3 className="text-lg font-semibold text-gray-800">Business Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Business Information
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -230,7 +257,9 @@ const VendorSignupPage = () => {
                       type="text"
                       placeholder="Himalayan Farms"
                       value={formData.businessName}
-                      onChange={(e) => updateFormData("businessName", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("businessName", e.target.value)
+                      }
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                     />
                   </div>
@@ -241,7 +270,9 @@ const VendorSignupPage = () => {
                     </label>
                     <select
                       value={formData.category}
-                      onChange={(e) => updateFormData("category", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("category", e.target.value)
+                      }
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                     >
                       <option value="">Select category</option>
@@ -263,7 +294,12 @@ const VendorSignupPage = () => {
                         type="text"
                         placeholder="123456789"
                         value={formData.panNumber}
-                        onChange={(e) => updateFormData("panNumber", e.target.value.replace(/\D/g, ""))}
+                        onChange={(e) =>
+                          updateFormData(
+                            "panNumber",
+                            e.target.value.replace(/\D/g, "")
+                          )
+                        }
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                     </div>
@@ -279,7 +315,9 @@ const VendorSignupPage = () => {
                         type="tel"
                         placeholder="+977 98XXXXXXXX"
                         value={formData.phone}
-                        onChange={(e) => updateFormData("phone", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("phone", e.target.value)
+                        }
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                     </div>
@@ -293,7 +331,9 @@ const VendorSignupPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <User className="w-5 h-5 text-merogreen" />
-                  <h3 className="text-lg font-semibold text-gray-800">Owner Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Owner Information
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -307,7 +347,9 @@ const VendorSignupPage = () => {
                         type="text"
                         placeholder="Ram Bahadur"
                         value={formData.ownerName}
-                        onChange={(e) => updateFormData("ownerName", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("ownerName", e.target.value)
+                        }
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                     </div>
@@ -323,7 +365,9 @@ const VendorSignupPage = () => {
                         type="email"
                         placeholder="email@example.com"
                         value={formData.email}
-                        onChange={(e) => updateFormData("email", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("email", e.target.value)
+                        }
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                     </div>
@@ -337,7 +381,9 @@ const VendorSignupPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin className="w-5 h-5 text-merogreen" />
-                  <h3 className="text-lg font-semibold text-gray-800">Location</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Location
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -347,7 +393,9 @@ const VendorSignupPage = () => {
                     </label>
                     <select
                       value={formData.province}
-                      onChange={(e) => updateFormData("province", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("province", e.target.value)
+                      }
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                     >
                       <option value="">Select province</option>
@@ -367,7 +415,9 @@ const VendorSignupPage = () => {
                       type="text"
                       placeholder="Kathmandu"
                       value={formData.district}
-                      onChange={(e) => updateFormData("district", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("district", e.target.value)
+                      }
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                     />
                   </div>
@@ -393,7 +443,9 @@ const VendorSignupPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Lock className="w-5 h-5 text-merogreen" />
-                  <h3 className="text-lg font-semibold text-gray-800">Security</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Security
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -407,7 +459,9 @@ const VendorSignupPage = () => {
                         type={showPass ? "text" : "password"}
                         placeholder="Min 8 characters"
                         value={formData.password}
-                        onChange={(e) => updateFormData("password", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("password", e.target.value)
+                        }
                         className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                       <button
@@ -430,7 +484,9 @@ const VendorSignupPage = () => {
                         type={showConfirmPass ? "text" : "password"}
                         placeholder="Re-enter password"
                         value={formData.confirmPassword}
-                        onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("confirmPassword", e.target.value)
+                        }
                         className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
                       />
                       <button
@@ -438,7 +494,11 @@ const VendorSignupPage = () => {
                         onClick={() => setShowConfirmPass(!showConfirmPass)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showConfirmPass ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -446,11 +506,15 @@ const VendorSignupPage = () => {
 
                 {/* Why Join Section */}
                 <div className="bg-green-50 rounded-lg p-4 mt-6">
-                  <h4 className="font-medium text-gray-800 mb-3">Why Join MeroBazaar?</h4>
+                  <h4 className="font-medium text-gray-800 mb-3">
+                    Why Join MeroBazaar?
+                  </h4>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-merogreen" />
-                      <span className="text-sm text-gray-600">Reach all provinces</span>
+                      <span className="text-sm text-gray-600">
+                        Reach all provinces
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-merogreen" />
@@ -458,11 +522,15 @@ const VendorSignupPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-merogreen" />
-                      <span className="text-sm text-gray-600">Easy dashboard</span>
+                      <span className="text-sm text-gray-600">
+                        Easy dashboard
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-merogreen" />
-                      <span className="text-sm text-gray-600">Secure payments</span>
+                      <span className="text-sm text-gray-600">
+                        Secure payments
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -477,11 +545,17 @@ const VendorSignupPage = () => {
                   />
                   <label className="ml-2 text-sm text-gray-500">
                     I agree to the{" "}
-                    <a href="#" className="text-merogreen hover:underline font-medium">
+                    <a
+                      href="#"
+                      className="text-merogreen hover:underline font-medium"
+                    >
                       Terms & Conditions
                     </a>{" "}
                     and{" "}
-                    <a href="#" className="text-merogreen hover:underline font-medium">
+                    <a
+                      href="#"
+                      className="text-merogreen hover:underline font-medium"
+                    >
                       Privacy Policy
                     </a>
                   </label>
@@ -523,7 +597,11 @@ const VendorSignupPage = () => {
                   type="submit"
                   disabled={isPending}
                   className={`flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition
-                    ${isPending ? "bg-green-400 cursor-not-allowed" : "bg-merogreen hover:bg-green-700"}`}
+                    ${
+                      isPending
+                        ? "bg-green-400 cursor-not-allowed"
+                        : "bg-merogreen hover:bg-green-700"
+                    }`}
                 >
                   {isPending ? "Creating Account..." : "Create Account"}
                 </button>
