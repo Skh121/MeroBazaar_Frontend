@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Minus,
@@ -15,6 +15,7 @@ import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
+const ESEWA_PAYMENT_URL = import.meta.env.VITE_ESEWA_PAYMENT_URL;
 
 const getImageUrl = (url) => {
   if (!url) return null;
@@ -45,6 +46,8 @@ const CartPage = () => {
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState("esewa");
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [esewaPaymentData, setEsewaPaymentData] = useState(null);
+  const esewaFormRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -63,6 +66,13 @@ const CartPage = () => {
       }));
     }
   }, [user]);
+
+  // Submit eSewa form when payment data is ready
+  useEffect(() => {
+    if (esewaPaymentData && esewaFormRef.current) {
+      esewaFormRef.current.submit();
+    }
+  }, [esewaPaymentData]);
 
   const fetchCart = async () => {
     try {
@@ -113,16 +123,41 @@ const CartPage = () => {
   const handlePlaceOrder = async () => {
     try {
       setPlacingOrder(true);
-      const response = await axios.post(
+
+      // Step 1: Create the order
+      const orderResponse = await axios.post(
         `${API_URL}/orders`,
         { shippingAddress, paymentMethod },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      navigate(`/order-success/${response.data.orderNumber}`);
+
+      const order = orderResponse.data;
+
+      // Step 2: Handle payment based on method
+      if (paymentMethod === "esewa") {
+        // Store order ID for failure handling
+        localStorage.setItem("pending_order_id", order._id);
+
+        // Initiate eSewa payment
+        const paymentResponse = await axios.post(
+          `${API_URL}/payment/esewa/initiate`,
+          { orderId: order._id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (paymentResponse.data.success) {
+          // Set payment data to trigger form submission
+          setEsewaPaymentData(paymentResponse.data.paymentData);
+        } else {
+          throw new Error("Failed to initiate payment");
+        }
+      } else {
+        // Cash on Delivery - go directly to success page
+        navigate(`/order-success/${order.orderNumber}`);
+      }
     } catch (err) {
       console.error("Failed to place order:", err);
       alert(err.response?.data?.message || "Failed to place order");
-    } finally {
       setPlacingOrder(false);
     }
   };
@@ -639,6 +674,68 @@ const CartPage = () => {
       </main>
 
       <Footer />
+
+      {/* Hidden eSewa Payment Form */}
+      {esewaPaymentData && (
+        <form
+          ref={esewaFormRef}
+          action={ESEWA_PAYMENT_URL}
+          method="POST"
+          style={{ display: "none" }}
+        >
+          <input type="hidden" name="amount" value={esewaPaymentData.amount} />
+          <input
+            type="hidden"
+            name="tax_amount"
+            value={esewaPaymentData.tax_amount}
+          />
+          <input
+            type="hidden"
+            name="total_amount"
+            value={esewaPaymentData.total_amount}
+          />
+          <input
+            type="hidden"
+            name="transaction_uuid"
+            value={esewaPaymentData.transaction_uuid}
+          />
+          <input
+            type="hidden"
+            name="product_code"
+            value={esewaPaymentData.product_code}
+          />
+          <input
+            type="hidden"
+            name="product_service_charge"
+            value={esewaPaymentData.product_service_charge}
+          />
+          <input
+            type="hidden"
+            name="product_delivery_charge"
+            value={esewaPaymentData.product_delivery_charge}
+          />
+          <input
+            type="hidden"
+            name="success_url"
+            value={esewaPaymentData.success_url}
+          />
+          <input
+            type="hidden"
+            name="failure_url"
+            value={esewaPaymentData.failure_url}
+          />
+          <input
+            type="hidden"
+            name="signed_field_names"
+            value={esewaPaymentData.signed_field_names}
+          />
+          <input
+            type="hidden"
+            name="signature"
+            value={esewaPaymentData.signature}
+          />
+        </form>
+      )}
     </div>
   );
 };

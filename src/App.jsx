@@ -21,6 +21,8 @@ import ProfilePage from "./components/pages/ProfilePage.jsx";
 import CartPage from "./components/pages/CartPage.jsx";
 import WishlistPage from "./components/pages/WishlistPage.jsx";
 import OrderSuccessPage from "./components/pages/OrderSuccessPage.jsx";
+import PaymentSuccessPage from "./components/pages/PaymentSuccessPage.jsx";
+import PaymentFailurePage from "./components/pages/PaymentFailurePage.jsx";
 
 // Vendor Pages
 import VendorLoginPage from "./components/pages/Vendor/VendorLoginPage.jsx";
@@ -80,6 +82,10 @@ function App() {
             path="/order-success/:orderNumber"
             element={<OrderSuccessPage />}
           />
+
+          {/* Payment Routes */}
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/failure" element={<PaymentFailurePage />} />
 
           {/* Vendor Public Routes */}
           <Route path="/vendor/login" element={<VendorLoginPage />} />
