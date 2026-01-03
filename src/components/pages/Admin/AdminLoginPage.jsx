@@ -48,10 +48,14 @@ const AdminLoginPage = () => {
           <div className="p-3 mb-4 text-sm bg-blue-50 border border-blue-200 rounded-lg">
             <p className="font-medium text-blue-800">Demo Credentials:</p>
             <p className="text-blue-700 mt-1">
-              Email: <code className="bg-blue-100 px-1 rounded">admin@merobazaar.com</code>
+              Email:{" "}
+              <code className="bg-blue-100 px-1 rounded">
+                admin@merobazaar.com
+              </code>
             </p>
             <p className="text-blue-700">
-              Password: <code className="bg-blue-100 px-1 rounded">admin123</code>
+              Password:{" "}
+              <code className="bg-blue-100 px-1 rounded">admin123</code>
             </p>
           </div>
 
@@ -104,7 +108,11 @@ const AdminLoginPage = () => {
               type="submit"
               disabled={isPending}
               className={`w-full py-3 rounded-lg text-white font-medium text-base shadow-sm transition cursor-pointer
-                ${isPending ? "bg-slate-400 cursor-not-allowed" : "bg-slate-900 hover:bg-slate-800"}`}
+                ${
+                  isPending
+                    ? "bg-slate-400 cursor-not-allowed"
+                    : "bg-slate-900 hover:bg-slate-800"
+                }`}
             >
               {isPending ? "Signing In..." : "Sign In to Admin Panel"}
             </button>

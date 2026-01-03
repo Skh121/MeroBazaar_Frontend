@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CheckCircle, Loader2 } from "lucide-react";
 import axios from "axios";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import { useTracking } from "../../hooks/useTracking";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const OrderSuccessPage = () => {
   const { orderNumber } = useParams();
   const token = localStorage.getItem("auth_token");
+  const { trackPurchase } = useTracking();
+  const trackedRef = useRef(false);
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +22,22 @@ const OrderSuccessPage = () => {
       fetchOrder();
     }
   }, [orderNumber, token]);
+
+  // Track purchase events when order is loaded
+  useEffect(() => {
+    if (order && order.items && !trackedRef.current) {
+      trackedRef.current = true;
+      // Track purchase for each item in the order
+      order.items.forEach((item) => {
+        trackPurchase(
+          item.product?._id || item.product,
+          item.category,
+          item.price,
+          item.quantity
+        );
+      });
+    }
+  }, [order, trackPurchase]);
 
   const fetchOrder = async () => {
     try {
@@ -55,7 +74,11 @@ const OrderSuccessPage = () => {
         <div className="text-center px-4">
           {/* Success Icon */}
           <div className="flex justify-center mb-6">
-            <CheckCircle size={80} className="text-merogreen" strokeWidth={1.5} />
+            <CheckCircle
+              size={80}
+              className="text-merogreen"
+              strokeWidth={1.5}
+            />
           </div>
 
           {/* Success Message */}

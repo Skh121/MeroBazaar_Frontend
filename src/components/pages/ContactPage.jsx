@@ -108,7 +108,10 @@ const ContactPage = () => {
                       backgroundColor: `${info.color}15`,
                     }}
                   >
-                    <info.icon className="w-4 h-4" style={{ color: info.color }} />
+                    <info.icon
+                      className="w-4 h-4"
+                      style={{ color: info.color }}
+                    />
                   </div>
                   <h3 className="font-medium text-gray-900 text-lg mb-1">
                     {info.title}
