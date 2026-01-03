@@ -16,7 +16,8 @@ const VendorRegistrationSuccess = () => {
             Registration Submitted!
           </h1>
           <p className="text-gray-600 mb-6">
-            Your vendor registration has been submitted successfully. Our team will review your application.
+            Your vendor registration has been submitted successfully. Our team
+            will review your application.
           </p>
 
           {/* Status Info */}
@@ -26,24 +27,35 @@ const VendorRegistrationSuccess = () => {
               <span className="font-medium">Pending Approval</span>
             </div>
             <p className="text-sm text-yellow-600 mt-2">
-              You will receive an email once your account is approved by the admin.
+              You will receive an email once your account is approved by the
+              admin.
             </p>
           </div>
 
           {/* What's Next */}
           <div className="text-left bg-gray-50 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-gray-800 mb-3">What happens next?</h3>
+            <h3 className="font-medium text-gray-800 mb-3">
+              What happens next?
+            </h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-merogreen text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">1</span>
-                <span>Our team reviews your application (1-2 business days)</span>
+                <span className="w-5 h-5 bg-merogreen text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+                  1
+                </span>
+                <span>
+                  Our team reviews your application (1-2 business days)
+                </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">2</span>
+                <span className="w-5 h-5 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+                  2
+                </span>
                 <span>You receive an approval email</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">3</span>
+                <span className="w-5 h-5 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+                  3
+                </span>
                 <span>Start selling on MeroBazaar!</span>
               </li>
             </ul>

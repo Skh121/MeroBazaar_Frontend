@@ -11,6 +11,8 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import axios from "axios";
 import { useAuthStore } from "../../../store/lib/authStore";
@@ -28,6 +30,8 @@ const UNITS = ["piece", "kg", "gram", "liter", "ml", "dozen", "pack"];
 
 const BADGES = ["Best Seller", "New", "Sale", "Limited"];
 
+const ITEMS_PER_PAGE = 10;
+
 const VendorProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +41,7 @@ const VendorProducts = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const token = useAuthStore((state) => state.token);
   const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -127,7 +132,9 @@ const VendorProducts = () => {
     // Set existing images as previews
     setImagePreviews(
       (product.images || []).map((img) => ({
-        url: img.url.startsWith("http") ? img.url : `${API_URL.replace("/api", "")}${img.url}`,
+        url: img.url.startsWith("http")
+          ? img.url
+          : `${API_URL.replace("/api", "")}${img.url}`,
         isExisting: true,
       }))
     );
@@ -234,7 +241,9 @@ const VendorProducts = () => {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        comparePrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
+        comparePrice: formData.comparePrice
+          ? parseFloat(formData.comparePrice)
+          : null,
         category: formData.category,
         stock: parseInt(formData.stock),
         unit: formData.unit,
@@ -242,11 +251,18 @@ const VendorProducts = () => {
         isFeatured: formData.isFeatured,
         isRegionalSpecialty: formData.isRegionalSpecialty,
         images: allImages,
-        tags: formData.tags.split(",").map((t) => t.trim()).filter((t) => t),
+        tags: formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t),
       };
 
       if (editingProduct) {
-        await axios.put(`${API_URL}/products/${editingProduct._id}`, productData, config);
+        await axios.put(
+          `${API_URL}/products/${editingProduct._id}`,
+          productData,
+          config
+        );
         showNotification("Product updated successfully");
       } else {
         await axios.post(`${API_URL}/products`, productData, config);
@@ -258,7 +274,10 @@ const VendorProducts = () => {
       fetchProducts();
     } catch (error) {
       console.error("Failed to save product:", error);
-      showNotification(error.response?.data?.message || "Failed to save product", "error");
+      showNotification(
+        error.response?.data?.message || "Failed to save product",
+        "error"
+      );
     } finally {
       setSubmitLoading(false);
       setUploadingImages(false);
@@ -266,7 +285,8 @@ const VendorProducts = () => {
   };
 
   const handleDelete = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
 
     setDeleteLoading(productId);
     try {
@@ -288,6 +308,17 @@ const VendorProducts = () => {
       p.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case "active":
@@ -307,10 +338,16 @@ const VendorProducts = () => {
       {notification && (
         <div
           className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg ${
-            notification.type === "error" ? "bg-red-500 text-white" : "bg-green-500 text-white"
+            notification.type === "error"
+              ? "bg-red-500 text-white"
+              : "bg-green-500 text-white"
           }`}
         >
-          {notification.type === "error" ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
+          {notification.type === "error" ? (
+            <AlertCircle size={20} />
+          ) : (
+            <CheckCircle size={20} />
+          )}
           {notification.message}
         </div>
       )}
@@ -348,112 +385,192 @@ const VendorProducts = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         {loading ? (
           <div className="p-8 text-center">
-            <Loader2 size={32} className="mx-auto mb-2 text-merogreen animate-spin" />
+            <Loader2
+              size={32}
+              className="mx-auto mb-2 text-merogreen animate-spin"
+            />
             <p className="text-gray-500">Loading products...</p>
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Product
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Category
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Price
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Stock
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredProducts.map((product) => (
-                  <tr key={product._id} className="hover:bg-gray-50">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                          {product.images?.[0]?.url ? (
-                            <img
-                              src={
-                                product.images[0].url.startsWith("http")
-                                  ? product.images[0].url
-                                  : `${API_URL.replace("/api", "")}${product.images[0].url}`
-                              }
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Package size={20} className="text-gray-400" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800">{product.name}</p>
-                          {product.badge && (
-                            <span className="text-xs text-merogreen font-medium">{product.badge}</span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-600">{product.category}</td>
-                    <td className="px-5 py-4">
-                      <div>
-                        <p className="font-medium text-gray-800">Rs. {product.price}</p>
-                        {product.comparePrice && (
-                          <p className="text-xs text-gray-400 line-through">Rs. {product.comparePrice}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-600">
-                      {product.stock} {product.unit}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>
-                        {product.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => openEditModal(product)}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product._id)}
-                          disabled={deleteLoading === product._id}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
-                          title="Delete"
-                        >
-                          {deleteLoading === product._id ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Product
+                    </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Category
+                    </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Price
+                    </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Stock
+                    </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Status
+                    </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {paginatedProducts.map((product) => (
+                    <tr key={product._id} className="hover:bg-gray-50">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                            {product.images?.[0]?.url ? (
+                              <img
+                                src={
+                                  product.images[0].url.startsWith("http")
+                                    ? product.images[0].url
+                                    : `${API_URL.replace("/api", "")}${
+                                        product.images[0].url
+                                      }`
+                                }
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Package size={20} className="text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {product.name}
+                            </p>
+                            {product.badge && (
+                              <span className="text-xs text-merogreen font-medium">
+                                {product.badge}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {product.category}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            Rs. {product.price}
+                          </p>
+                          {product.comparePrice && (
+                            <p className="text-xs text-gray-400 line-through">
+                              Rs. {product.comparePrice}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {product.stock} {product.unit}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            product.status
+                          )}`}
+                        >
+                          {product.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEditModal(product)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product._id)}
+                            disabled={deleteLoading === product._id}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+                            title="Delete"
+                          >
+                            {deleteLoading === product._id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, filteredProducts.length)} of{" "}
+                  {filteredProducts.length} products
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Show first, last, current, and adjacent pages
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, index, array) => (
+                      <React.Fragment key={page}>
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="px-2 text-gray-400">...</span>
+                        )}
+                        <button
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                            currentPage === page
+                              ? "bg-merogreen text-white"
+                              : "border border-gray-200 hover:bg-gray-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    ))}
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-8 text-center">
             <Package size={48} className="mx-auto mb-2 text-gray-300" />
             <p className="text-gray-500 mb-4">
-              {searchQuery ? "No products match your search" : "No products yet"}
+              {searchQuery
+                ? "No products match your search"
+                : "No products yet"}
             </p>
             {!searchQuery && (
               <button
@@ -470,7 +587,10 @@ const VendorProducts = () => {
       {/* Add/Edit Product Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setShowModal(false)}
+          />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-white">
@@ -645,8 +765,15 @@ const VendorProducts = () => {
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden group">
-                      <img src={preview.url} alt="" className="w-full h-full object-cover" />
+                    <div
+                      key={index}
+                      className="relative w-20 h-20 rounded-lg overflow-hidden group"
+                    >
+                      <img
+                        src={preview.url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
@@ -676,7 +803,8 @@ const VendorProducts = () => {
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Supported formats: JPEG, PNG, GIF, WebP. Max size: 5MB per image.
+                  Supported formats: JPEG, PNG, GIF, WebP. Max size: 5MB per
+                  image.
                 </p>
               </div>
 
@@ -690,7 +818,9 @@ const VendorProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-merogreen focus:ring-merogreen border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">Featured Product</span>
+                  <span className="text-sm text-gray-700">
+                    Featured Product
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -700,7 +830,9 @@ const VendorProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-merogreen focus:ring-merogreen border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">Regional Specialty</span>
+                  <span className="text-sm text-gray-700">
+                    Regional Specialty
+                  </span>
                 </label>
               </div>
 
@@ -718,8 +850,14 @@ const VendorProducts = () => {
                   disabled={submitLoading || uploadingImages}
                   className="flex items-center gap-2 px-4 py-2.5 bg-merogreen text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
                 >
-                  {(submitLoading || uploadingImages) && <Loader2 size={18} className="animate-spin" />}
-                  {uploadingImages ? "Uploading Images..." : editingProduct ? "Update Product" : "Add Product"}
+                  {(submitLoading || uploadingImages) && (
+                    <Loader2 size={18} className="animate-spin" />
+                  )}
+                  {uploadingImages
+                    ? "Uploading Images..."
+                    : editingProduct
+                    ? "Update Product"
+                    : "Add Product"}
                 </button>
               </div>
             </form>

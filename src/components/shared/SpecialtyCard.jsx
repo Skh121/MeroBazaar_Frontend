@@ -1,15 +1,78 @@
-import React from "react";
-import { MapPin, Heart, Package, ShoppingCart, Star } from "lucide-react";
+import React, { useState } from "react";
+import {
+  MapPin,
+  Heart,
+  Package,
+  ShoppingCart,
+  Star,
+  Loader2,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useTracking } from "../../hooks/useTracking";
+import { useAuthStore } from "../../store/lib/authStore";
+import { useCartStore } from "../../store/lib/cartStore";
+import { useWishlistStore } from "../../store/lib/wishlistStore";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const getImageUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `${API_URL.replace("/api", "")}${url}`;
+  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${BASE_URL}${cleanUrl}`;
 };
 
 const SpecialtyCard = ({ product, onClick }) => {
+  const navigate = useNavigate();
+  const { trackAddToCart, trackWishlistAdd } = useTracking();
+  const token = useAuthStore((state) => state.token);
+  const { addToCart } = useCartStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
+
+  const isWishlisted = isInWishlist(product._id);
+
+  const handleQuickAddToCart = async (e) => {
+    e.stopPropagation();
+
+    if (!token) {
+      alert("Please login to add to cart");
+      navigate("/login");
+      return;
+    }
+
+    setAddingToCart(true);
+    const result = await addToCart(token, product._id, 1);
+    setAddingToCart(false);
+
+    if (result.success) {
+      trackAddToCart(product._id, product.category, product.price, 1);
+      alert(`Added ${product.name} to cart`);
+    } else {
+      alert(result.message || "Failed to add to cart");
+    }
+  };
+
+  const handleQuickWishlist = async (e) => {
+    e.stopPropagation();
+
+    if (!token) {
+      alert("Please login to add to wishlist");
+      navigate("/login");
+      return;
+    }
+
+    setTogglingWishlist(true);
+    await toggleWishlist(token, product._id);
+    if (!isWishlisted) {
+      trackWishlistAdd(product._id, product.category);
+    }
+    setTogglingWishlist(false);
+  };
+
   return (
     <div
       onClick={() => onClick(product._id)}
@@ -82,22 +145,33 @@ const SpecialtyCard = ({ product, onClick }) => {
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Add to wishlist
-              }}
-              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={handleQuickWishlist}
+              disabled={togglingWishlist}
+              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
             >
-              <Heart size={20} className="text-gray-400 hover:text-red-500" />
+              {togglingWishlist ? (
+                <Loader2 size={20} className="animate-spin text-gray-400" />
+              ) : (
+                <Heart
+                  size={20}
+                  className={
+                    isWishlisted
+                      ? "fill-red-500 text-red-500"
+                      : "text-gray-400 hover:text-red-500"
+                  }
+                />
+              )}
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Add to cart
-              }}
-              className="p-1.5 rounded-full bg-merogreen/10 hover:bg-green-100 transition-colors"
+              onClick={handleQuickAddToCart}
+              disabled={addingToCart}
+              className="p-1.5 rounded-full bg-merogreen/10 hover:bg-green-100 transition-colors disabled:opacity-50"
             >
-              <ShoppingCart size={20} className="text-merogreen" />
+              {addingToCart ? (
+                <Loader2 size={20} className="animate-spin text-merogreen" />
+              ) : (
+                <ShoppingCart size={20} className="text-merogreen" />
+              )}
             </button>
           </div>
         </div>

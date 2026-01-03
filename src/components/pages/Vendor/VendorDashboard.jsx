@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import VendorProducts from "./VendorProducts";
+import VendorAnalyticsContent from "./VendorAnalyticsContent";
 import {
   LayoutDashboard,
   Package,
@@ -19,6 +20,8 @@ import {
   Users,
   Clock,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   MoreVertical,
   Loader2,
@@ -140,6 +143,8 @@ const SAMPLE_PRODUCTS = [
   { name: "Handmade Soap", sales: 312, stock: 200, revenue: "Rs. 46,800" },
 ];
 
+const ORDERS_PER_PAGE = 10;
+
 const VendorDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -147,11 +152,18 @@ const VendorDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updatingOrder, setUpdatingOrder] = useState(null);
+  const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
   const user = useAuthStore((state) => state.user);
   const token = localStorage.getItem("auth_token");
   const logout = useLogout();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Orders pagination logic
+  const ordersTotalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
+  const ordersStartIndex = (ordersCurrentPage - 1) * ORDERS_PER_PAGE;
+  const ordersEndIndex = ordersStartIndex + ORDERS_PER_PAGE;
+  const paginatedOrders = orders.slice(ordersStartIndex, ordersEndIndex);
 
   // Fetch orders and stats
   useEffect(() => {
@@ -437,7 +449,7 @@ const VendorDashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {orders.map((order) => (
+                        {paginatedOrders.map((order) => (
                           <tr key={order._id} className="hover:bg-gray-50">
                             <td className="px-5 py-4 text-sm font-medium text-gray-800">
                               {order.orderNumber}
@@ -523,20 +535,73 @@ const VendorDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Orders Pagination */}
+                  {ordersTotalPages > 1 && (
+                    <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
+                      <div className="text-sm text-gray-500">
+                        Showing {ordersStartIndex + 1} to{" "}
+                        {Math.min(ordersEndIndex, orders.length)} of{" "}
+                        {orders.length} orders
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            setOrdersCurrentPage((prev) =>
+                              Math.max(prev - 1, 1)
+                            )
+                          }
+                          disabled={ordersCurrentPage === 1}
+                          className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft size={16} />
+                        </button>
+                        {Array.from(
+                          { length: ordersTotalPages },
+                          (_, i) => i + 1
+                        )
+                          .filter(
+                            (page) =>
+                              page === 1 ||
+                              page === ordersTotalPages ||
+                              Math.abs(page - ordersCurrentPage) <= 1
+                          )
+                          .map((page, index, array) => (
+                            <React.Fragment key={page}>
+                              {index > 0 && array[index - 1] !== page - 1 && (
+                                <span className="px-2 text-gray-400">...</span>
+                              )}
+                              <button
+                                onClick={() => setOrdersCurrentPage(page)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                                  ordersCurrentPage === page
+                                    ? "bg-merogreen text-white"
+                                    : "border border-gray-200 hover:bg-gray-50"
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          ))}
+                        <button
+                          onClick={() =>
+                            setOrdersCurrentPage((prev) =>
+                              Math.min(prev + 1, ordersTotalPages)
+                            )
+                          }
+                          disabled={ordersCurrentPage === ordersTotalPages}
+                          className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ) : activeMenu === "analytics" ? (
-            <div>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Analytics</h1>
-                <p className="text-gray-500">View your store performance</p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
-                <BarChart3 size={48} className="mx-auto mb-2 opacity-30" />
-                <p>Analytics dashboard coming soon</p>
-              </div>
-            </div>
+            <VendorAnalyticsContent />
           ) : activeMenu === "settings" ? (
             <div>
               <div className="mb-6">
