@@ -35,26 +35,16 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 };
 
 export const VendorRoute = ({ children }) => {
-  return (
-    <ProtectedRoute allowedRoles={["vendor"]}>
-      {children}
-    </ProtectedRoute>
-  );
+  return <ProtectedRoute allowedRoles={["vendor"]}>{children}</ProtectedRoute>;
 };
 
 export const AdminRoute = ({ children }) => {
-  return (
-    <ProtectedRoute allowedRoles={["admin"]}>
-      {children}
-    </ProtectedRoute>
-  );
+  return <ProtectedRoute allowedRoles={["admin"]}>{children}</ProtectedRoute>;
 };
 
 export const CustomerRoute = ({ children }) => {
   return (
-    <ProtectedRoute allowedRoles={["customer"]}>
-      {children}
-    </ProtectedRoute>
+    <ProtectedRoute allowedRoles={["customer"]}>{children}</ProtectedRoute>
   );
 };
 

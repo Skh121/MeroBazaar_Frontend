@@ -1,7 +1,7 @@
 // src/store/auth/authStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { clearToken } from "../../utils/token";
+import { clearToken, saveToken } from "../../utils/token";
 
 export const useAuthStore = create(
   persist(
@@ -10,6 +10,10 @@ export const useAuthStore = create(
       token: null,
 
       setUser: (userData) => {
+        // Sync token with localStorage for backward compatibility
+        if (userData.token) {
+          saveToken(userData.token);
+        }
         set({
           user: {
             id: userData.id,
@@ -17,9 +21,20 @@ export const useAuthStore = create(
             email: userData.email,
             role: userData.role,
             vendorData: userData.vendorData || null,
+            phone: userData.phone || null,
+            dateOfBirth: userData.dateOfBirth || null,
+            gender: userData.gender || null,
+            avatar: userData.avatar || null,
+            createdAt: userData.createdAt || null,
           },
           token: userData.token,
         });
+      },
+
+      updateUser: (updates) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        }));
       },
 
       logout: () => {
@@ -29,6 +44,12 @@ export const useAuthStore = create(
     }),
     {
       name: "auth-storage",
+      onRehydrateStorage: () => (state) => {
+        // Sync localStorage with Zustand state on app load
+        if (state?.token) {
+          saveToken(state.token);
+        }
+      },
     }
   )
 );

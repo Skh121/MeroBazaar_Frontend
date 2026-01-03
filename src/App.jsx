@@ -15,6 +15,7 @@ import ContactPage from "./components/pages/ContactPage.jsx";
 
 // Product Pages
 import ProductDetails from "./components/pages/ProductDetails.jsx";
+import ShopPage from "./components/pages/ShopPage.jsx";
 
 // User Pages
 import ProfilePage from "./components/pages/ProfilePage.jsx";
@@ -32,6 +33,10 @@ import VendorDashboard from "./components/pages/Vendor/VendorDashboard.jsx";
 
 // Admin Pages
 import AdminDashboard from "./components/pages/Admin/AdminDashboard.jsx";
+import AnalyticsDashboard from "./components/pages/Admin/Analytics/AnalyticsDashboard.jsx";
+import DemandForecastingPage from "./components/pages/Admin/Analytics/DemandForecastingPage.jsx";
+import DynamicPricingPage from "./components/pages/Admin/Analytics/DynamicPricingPage.jsx";
+import CustomerSegmentsPage from "./components/pages/Admin/Analytics/CustomerSegmentsPage.jsx";
 
 // Protected Route Components
 import { VendorRoute, AdminRoute } from "./components/auth/ProtectedRoute.jsx";
@@ -68,6 +73,9 @@ function App() {
 
           {/* Customer Routes */}
           <Route path="/customer/home" element={<CustomerHome />} />
+
+          {/* Shop Routes */}
+          <Route path="/shop" element={<ShopPage />} />
 
           {/* Product Routes */}
           <Route path="/product/:id" element={<ProductDetails />} />
@@ -188,7 +196,31 @@ function App() {
             path="/admin/analytics"
             element={
               <AdminRoute>
-                <AdminDashboard />
+                <AnalyticsDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics/forecasting"
+            element={
+              <AdminRoute>
+                <DemandForecastingPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics/pricing"
+            element={
+              <AdminRoute>
+                <DynamicPricingPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics/segments"
+            element={
+              <AdminRoute>
+                <CustomerSegmentsPage />
               </AdminRoute>
             }
           />

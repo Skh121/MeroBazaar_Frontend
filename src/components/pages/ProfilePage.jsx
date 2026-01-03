@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -9,18 +9,15 @@ import {
   Phone,
   Save,
   Loader2,
-  Calendar,
   ChevronDown,
   ShoppingBag,
   Package,
   Eye,
 } from "lucide-react";
-import axios from "axios";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+import { useProfileStore } from "../../store/lib/profileStore";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -28,42 +25,29 @@ const ProfilePage = () => {
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const [activeTab, setActiveTab] = useState("personal");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  // Personal Information State
-  const [personalInfo, setPersonalInfo] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    dateOfBirth: "",
-    gender: "",
-  });
-
-  // Address State
-  const [addresses, setAddresses] = useState([]);
-  const [newAddress, setNewAddress] = useState({
-    label: "Home",
-    street: "",
-    city: "",
-    district: "",
-    province: "",
-    isDefault: false,
-  });
-
-  // Security State
-  const [security, setSecurity] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  // Orders State
-  const [orders, setOrders] = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(false);
+  // Profile store
+  const {
+    personalInfo,
+    addresses,
+    orders,
+    activeTab,
+    loading,
+    saving,
+    ordersLoading,
+    message,
+    newAddress,
+    security,
+    setActiveTab,
+    updatePersonalInfoField,
+    updateNewAddressField,
+    updateSecurityField,
+    initFromUser,
+    fetchProfile,
+    fetchOrders,
+    savePersonalInfo,
+    saveAddress,
+    changePassword,
+  } = useProfileStore();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -75,170 +59,32 @@ const ProfilePage = () => {
   // Load user data
   useEffect(() => {
     if (user) {
-      const names = user.fullName?.split(" ") || ["", ""];
-      setPersonalInfo({
-        firstName: names[0] || "",
-        lastName: names.slice(1).join(" ") || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        dateOfBirth: user.dateOfBirth || "",
-        gender: user.gender || "",
-      });
-      fetchUserProfile();
+      initFromUser(user);
+      fetchProfile(token);
     }
-  }, [user]);
-
-  const fetchUserProfile = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = response.data;
-      const names = data.fullName?.split(" ") || ["", ""];
-      setPersonalInfo({
-        firstName: names[0] || "",
-        lastName: names.slice(1).join(" ") || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        dateOfBirth: data.dateOfBirth ? data.dateOfBirth.split("T")[0] : "",
-        gender: data.gender || "",
-      });
-      setAddresses(data.addresses || []);
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchOrders = async () => {
-    try {
-      setOrdersLoading(true);
-      const response = await axios.get(`${API_URL}/orders`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(response.data);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    } finally {
-      setOrdersLoading(false);
-    }
-  };
+  }, [user, token, initFromUser, fetchProfile]);
 
   // Fetch orders when orders tab is selected
   useEffect(() => {
     if (activeTab === "orders" && orders.length === 0) {
-      fetchOrders();
+      fetchOrders(token);
     }
-  }, [activeTab]);
+  }, [activeTab, orders.length, token, fetchOrders]);
 
   const handlePersonalInfoChange = (e) => {
-    setPersonalInfo({ ...personalInfo, [e.target.name]: e.target.value });
+    updatePersonalInfoField(e.target.name, e.target.value);
   };
 
   const handleSavePersonalInfo = async () => {
-    try {
-      setSaving(true);
-      setMessage({ type: "", text: "" });
-
-      const fullName =
-        `${personalInfo.firstName} ${personalInfo.lastName}`.trim();
-
-      await axios.put(
-        `${API_URL}/users/profile`,
-        {
-          fullName,
-          phone: personalInfo.phone,
-          dateOfBirth: personalInfo.dateOfBirth,
-          gender: personalInfo.gender,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Update local user state
-      setUser({
-        ...user,
-        fullName,
-        token,
-      });
-
-      setMessage({ type: "success", text: "Profile updated successfully!" });
-    } catch (err) {
-      console.error("Failed to update profile:", err);
-      setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to update profile",
-      });
-    } finally {
-      setSaving(false);
-    }
+    await savePersonalInfo(token, setUser, user);
   };
 
   const handleSaveAddress = async () => {
-    try {
-      setSaving(true);
-      setMessage({ type: "", text: "" });
-
-      await axios.post(`${API_URL}/users/addresses`, newAddress, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setNewAddress({
-        label: "Home",
-        street: "",
-        city: "",
-        district: "",
-        province: "",
-        isDefault: false,
-      });
-      fetchUserProfile();
-      setMessage({ type: "success", text: "Address added successfully!" });
-    } catch (err) {
-      console.error("Failed to add address:", err);
-      setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to add address",
-      });
-    } finally {
-      setSaving(false);
-    }
+    await saveAddress(token);
   };
 
   const handleChangePassword = async () => {
-    if (security.newPassword !== security.confirmPassword) {
-      setMessage({ type: "error", text: "Passwords do not match" });
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setMessage({ type: "", text: "" });
-
-      await axios.put(
-        `${API_URL}/users/change-password`,
-        {
-          currentPassword: security.currentPassword,
-          newPassword: security.newPassword,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setSecurity({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setMessage({ type: "success", text: "Password changed successfully!" });
-    } catch (err) {
-      console.error("Failed to change password:", err);
-      setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to change password",
-      });
-    } finally {
-      setSaving(false);
-    }
+    await changePassword(token);
   };
 
   // Get user initials
@@ -686,10 +532,7 @@ const ProfilePage = () => {
                             <select
                               value={newAddress.label}
                               onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  label: e.target.value,
-                                })
+                                updateNewAddressField("label", e.target.value)
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                             >
@@ -706,10 +549,7 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.street}
                               onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  street: e.target.value,
-                                })
+                                updateNewAddressField("street", e.target.value)
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter street address"
@@ -725,10 +565,7 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.city}
                               onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  city: e.target.value,
-                                })
+                                updateNewAddressField("city", e.target.value)
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter city"
@@ -742,10 +579,10 @@ const ProfilePage = () => {
                               type="text"
                               value={newAddress.district}
                               onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  district: e.target.value,
-                                })
+                                updateNewAddressField(
+                                  "district",
+                                  e.target.value
+                                )
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                               placeholder="Enter district"
@@ -758,10 +595,10 @@ const ProfilePage = () => {
                             <select
                               value={newAddress.province}
                               onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  province: e.target.value,
-                                })
+                                updateNewAddressField(
+                                  "province",
+                                  e.target.value
+                                )
                               }
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                             >
@@ -783,10 +620,10 @@ const ProfilePage = () => {
                             type="checkbox"
                             checked={newAddress.isDefault}
                             onChange={(e) =>
-                              setNewAddress({
-                                ...newAddress,
-                                isDefault: e.target.checked,
-                              })
+                              updateNewAddressField(
+                                "isDefault",
+                                e.target.checked
+                              )
                             }
                             className="w-4 h-4 text-merogreen border-gray-300 rounded focus:ring-merogreen"
                           />
@@ -818,10 +655,10 @@ const ProfilePage = () => {
                           type="password"
                           value={security.currentPassword}
                           onChange={(e) =>
-                            setSecurity({
-                              ...security,
-                              currentPassword: e.target.value,
-                            })
+                            updateSecurityField(
+                              "currentPassword",
+                              e.target.value
+                            )
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Enter current password"
@@ -835,10 +672,7 @@ const ProfilePage = () => {
                           type="password"
                           value={security.newPassword}
                           onChange={(e) =>
-                            setSecurity({
-                              ...security,
-                              newPassword: e.target.value,
-                            })
+                            updateSecurityField("newPassword", e.target.value)
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Enter new password"
@@ -852,10 +686,10 @@ const ProfilePage = () => {
                           type="password"
                           value={security.confirmPassword}
                           onChange={(e) =>
-                            setSecurity({
-                              ...security,
-                              confirmPassword: e.target.value,
-                            })
+                            updateSecurityField(
+                              "confirmPassword",
+                              e.target.value
+                            )
                           }
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                           placeholder="Confirm new password"

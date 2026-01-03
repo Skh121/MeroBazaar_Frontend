@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, Loader2, Package } from "lucide-react";
-import axios from "axios";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import { useAuthStore } from "../../store/lib/authStore";
+import { useWishlistStore } from "../../store/lib/wishlistStore";
+import { useCartStore } from "../../store/lib/cartStore";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const getImageUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `${API_URL.replace("/api", "")}${url}`;
+  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${BASE_URL}${cleanUrl}`;
 };
 
 const categories = [
@@ -25,11 +29,21 @@ const categories = [
 
 const WishlistPage = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("auth_token");
+  const token = useAuthStore((state) => state.token);
 
-  const [wishlist, setWishlist] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("All Items");
+  // Wishlist store
+  const {
+    loading,
+    activeCategory,
+    setActiveCategory,
+    fetchWishlist,
+    removeFromWishlist,
+    getFilteredProducts,
+  } = useWishlistStore();
+
+  // Cart store
+  const { addToCart } = useCartStore();
+
   const [addingToCart, setAddingToCart] = useState(null);
 
   useEffect(() => {
@@ -37,55 +51,25 @@ const WishlistPage = () => {
       navigate("/login");
       return;
     }
-    fetchWishlist();
-  }, [token]);
+    fetchWishlist(token);
+  }, [token, fetchWishlist, navigate]);
 
-  const fetchWishlist = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/wishlist`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setWishlist(response.data);
-    } catch (err) {
-      console.error("Failed to fetch wishlist:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleRemoveFromWishlist = async (productId) => {
+    await removeFromWishlist(token, productId);
   };
 
-  const removeFromWishlist = async (productId) => {
-    try {
-      const response = await axios.delete(`${API_URL}/wishlist/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setWishlist(response.data);
-    } catch (err) {
-      console.error("Failed to remove from wishlist:", err);
-    }
-  };
-
-  const addToCart = async (productId) => {
-    try {
-      setAddingToCart(productId);
-      await axios.post(
-        `${API_URL}/cart/add`,
-        { productId, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  const handleAddToCart = async (productId) => {
+    setAddingToCart(productId);
+    const result = await addToCart(token, productId, 1);
+    if (result.success) {
       alert("Added to cart!");
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-      alert(err.response?.data?.message || "Failed to add to cart");
-    } finally {
-      setAddingToCart(null);
+    } else {
+      alert(result.message);
     }
+    setAddingToCart(null);
   };
 
-  const filteredProducts =
-    activeCategory === "All Items"
-      ? wishlist?.products
-      : wishlist?.products?.filter((p) => p.category === activeCategory);
+  const filteredProducts = getFilteredProducts();
 
   if (loading) {
     return (
@@ -172,7 +156,7 @@ const WishlistPage = () => {
                     </Link>
                     {/* Remove from Wishlist Button */}
                     <button
-                      onClick={() => removeFromWishlist(product._id)}
+                      onClick={() => handleRemoveFromWishlist(product._id)}
                       className="absolute top-2 right-2 p-1.5 bg-white rounded-full hover:bg-red-50 transition-colors z-10"
                     >
                       <Heart size={18} className="fill-red-500 text-red-500" />
@@ -230,7 +214,7 @@ const WishlistPage = () => {
 
                     {/* Add to Cart Button */}
                     <button
-                      onClick={() => addToCart(product._id)}
+                      onClick={() => handleAddToCart(product._id)}
                       disabled={
                         addingToCart === product._id || product.stock <= 0
                       }

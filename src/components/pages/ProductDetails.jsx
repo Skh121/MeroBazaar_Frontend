@@ -7,10 +7,6 @@ import {
   Star,
   Minus,
   Plus,
-  MapPin,
-  Phone,
-  Mail,
-  Store,
   Truck,
   Shield,
   RefreshCw,
@@ -25,18 +21,38 @@ import {
 import axios from "axios";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import { useAuthStore } from "../../store/lib/authStore";
+import { useCartStore } from "../../store/lib/cartStore";
+import { useWishlistStore } from "../../store/lib/wishlistStore";
+import { useTracking } from "../../hooks/useTracking";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const getImageUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `${API_URL.replace("/api", "")}${url}`;
+  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${BASE_URL}${cleanUrl}`;
 };
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Auth store
+  const token = useAuthStore((state) => state.token);
+
+  // Cart store
+  const { addToCart } = useCartStore();
+
+  // Wishlist store
+  const { toggleWishlist, isInWishlist, fetchWishlist, wishlist } =
+    useWishlistStore();
+
+  // Tracking hook (product views tracked server-side, only need cart/wishlist tracking)
+  const { trackAddToCart, trackWishlistAdd } = useTracking();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,13 +60,17 @@ const ProductDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
   const [relatedProducts, setRelatedProducts] = useState([]);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
 
   // Reviews state
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Check if product is in wishlist
+  const isWishlisted = product ? isInWishlist(product._id) : false;
 
   useEffect(() => {
     fetchProduct();
@@ -62,14 +82,27 @@ const ProductDetails = () => {
     }
     if (product?._id) {
       fetchReviews();
+      // Note: Product views are now tracked server-side in productRoutes.js
+      // No need for frontend tracking here (prevents duplicate counts)
     }
   }, [product]);
+
+  // Fetch wishlist on mount if logged in
+  useEffect(() => {
+    if (token && !wishlist) {
+      fetchWishlist(token);
+    }
+  }, [token, wishlist, fetchWishlist]);
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_URL}/products/${id}`);
+      // Include auth header if logged in (for analytics tracking)
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await axios.get(`${API_URL}/products/${id}`, config);
       setProduct(response.data);
     } catch (err) {
       console.error("Failed to fetch product:", err);
@@ -88,7 +121,8 @@ const ProductDetails = () => {
         },
       });
       // Filter out current product
-      const filtered = response.data.products?.filter((p) => p._id !== id) || [];
+      const filtered =
+        response.data.products?.filter((p) => p._id !== id) || [];
       setRelatedProducts(filtered.slice(0, 4));
     } catch (err) {
       console.error("Failed to fetch related products:", err);
@@ -115,20 +149,15 @@ const ProductDetails = () => {
 
     try {
       setSubmittingReview(true);
-      const token = localStorage.getItem("auth_token");
       if (!token) {
         alert("Please login to submit a review");
         navigate("/login");
         return;
       }
 
-      await axios.post(
-        `${API_URL}/products/${id}/reviews`,
-        newReview,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.post(`${API_URL}/products/${id}/reviews`, newReview, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setNewReview({ rating: 5, comment: "" });
       fetchReviews();
@@ -150,74 +179,59 @@ const ProductDetails = () => {
   };
 
   const handleAddToCart = async () => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        alert("Please login to add items to cart");
-        navigate("/login");
-        return;
-      }
+    if (!token) {
+      alert("Please login to add items to cart");
+      navigate("/login");
+      return;
+    }
 
-      await axios.post(
-        `${API_URL}/cart/add`,
-        { productId: product._id, quantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    setAddingToCart(true);
+    const result = await addToCart(token, product._id, quantity);
+    setAddingToCart(false);
+
+    if (result.success) {
+      // Track add to cart event for analytics
+      trackAddToCart(product._id, product.category, product.price, quantity);
       alert(`Added ${quantity} ${product.name} to cart`);
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-      alert(err.response?.data?.message || "Failed to add to cart");
+    } else {
+      alert(result.message);
     }
   };
 
   const handleBuyNow = async () => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        alert("Please login to proceed");
-        navigate("/login");
-        return;
-      }
+    if (!token) {
+      alert("Please login to proceed");
+      navigate("/login");
+      return;
+    }
 
-      // Add to cart first
-      await axios.post(
-        `${API_URL}/cart/add`,
-        { productId: product._id, quantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    setAddingToCart(true);
+    const result = await addToCart(token, product._id, quantity);
+    setAddingToCart(false);
 
-      // Navigate to checkout
-      navigate("/checkout");
-    } catch (err) {
-      console.error("Failed to process buy now:", err);
-      alert(err.response?.data?.message || "Failed to process. Please try again.");
+    if (result.success) {
+      // Track cart addition for analytics
+      trackAddToCart(product._id, product.category, product.price, quantity);
+      navigate("/cart");
+    } else {
+      alert(result.message);
     }
   };
 
   const handleToggleWishlist = async () => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        alert("Please login to add to wishlist");
-        navigate("/login");
-        return;
-      }
-
-      if (isWishlisted) {
-        await axios.delete(`${API_URL}/wishlist/${product._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        await axios.post(
-          `${API_URL}/wishlist`,
-          { productId: product._id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-      setIsWishlisted(!isWishlisted);
-    } catch (err) {
-      console.error("Failed to update wishlist:", err);
+    if (!token) {
+      alert("Please login to add to wishlist");
+      navigate("/login");
+      return;
     }
+
+    setTogglingWishlist(true);
+    await toggleWishlist(token, product._id);
+    // Track wishlist add event for analytics (only if adding, not removing)
+    if (!isWishlisted) {
+      trackWishlistAdd(product._id, product.category);
+    }
+    setTogglingWishlist(false);
   };
 
   // Generate product details from description or defaults
@@ -415,7 +429,11 @@ const ProductDetails = () => {
               </div>
 
               {/* Stock Status */}
-              <p className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+              <p
+                className={`text-sm font-medium ${
+                  product.stock > 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {product.stock > 0
                   ? `In Stock (${product.stock} available)`
                   : "Out of Stock"}
@@ -434,7 +452,10 @@ const ProductDetails = () => {
                     </Link>
                   </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                    <Star
+                      size={14}
+                      className="fill-yellow-400 text-yellow-400"
+                    />
                     <span className="text-sm text-gray-600">
                       {product.vendor.rating?.toFixed(1) || "4.9"} Seller Rating
                     </span>
@@ -472,31 +493,44 @@ const ProductDetails = () => {
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock <= 0}
+                  disabled={product.stock <= 0 || addingToCart}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-merogreen text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ShoppingCart size={20} />
+                  {addingToCart ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <ShoppingCart size={20} />
+                  )}
                   Add to Cart
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  disabled={product.stock <= 0}
+                  disabled={product.stock <= 0 || addingToCart}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-merogreen text-merogreen rounded-lg font-semibold hover:bg-green-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Buy Now
                 </button>
                 <button
                   onClick={handleToggleWishlist}
+                  disabled={togglingWishlist}
                   className={`p-3 border-2 rounded-lg transition ${
                     isWishlisted
                       ? "border-red-500 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <Heart
-                    size={20}
-                    className={isWishlisted ? "fill-red-500 text-red-500" : "text-gray-400"}
-                  />
+                  {togglingWishlist ? (
+                    <Loader2 size={20} className="animate-spin text-gray-400" />
+                  ) : (
+                    <Heart
+                      size={20}
+                      className={
+                        isWishlisted
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-400"
+                      }
+                    />
+                  )}
                 </button>
               </div>
 
@@ -561,7 +595,10 @@ const ProductDetails = () => {
                       </h3>
                       <ul className="space-y-2">
                         {getProductDetails().map((detail, index) => (
-                          <li key={index} className="flex items-start gap-2 text-gray-600">
+                          <li
+                            key={index}
+                            className="flex items-start gap-2 text-gray-600"
+                          >
                             <span className="text-merogreen mt-1">•</span>
                             <span>{detail}</span>
                           </li>
@@ -614,7 +651,10 @@ const ProductDetails = () => {
                         <textarea
                           value={newReview.comment}
                           onChange={(e) =>
-                            setNewReview({ ...newReview, comment: e.target.value })
+                            setNewReview({
+                              ...newReview,
+                              comment: e.target.value,
+                            })
                           }
                           placeholder="Share your experience with this product..."
                           rows={4}
@@ -645,11 +685,16 @@ const ProductDetails = () => {
 
                     {reviewsLoading ? (
                       <div className="flex justify-center py-8">
-                        <Loader2 size={32} className="text-merogreen animate-spin" />
+                        <Loader2
+                          size={32}
+                          className="text-merogreen animate-spin"
+                        />
                       </div>
                     ) : reviews.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        <p>No reviews yet. Be the first to review this product!</p>
+                        <p>
+                          No reviews yet. Be the first to review this product!
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -669,7 +714,9 @@ const ProductDetails = () => {
                                   </span>
                                   <span className="text-sm text-gray-400">
                                     {review.createdAt
-                                      ? new Date(review.createdAt).toLocaleDateString()
+                                      ? new Date(
+                                          review.createdAt
+                                        ).toLocaleDateString()
                                       : ""}
                                   </span>
                                 </div>
@@ -686,7 +733,9 @@ const ProductDetails = () => {
                                     />
                                   ))}
                                 </div>
-                                <p className="text-gray-600">{review.comment}</p>
+                                <p className="text-gray-600">
+                                  {review.comment}
+                                </p>
                                 {review.helpful !== undefined && (
                                   <button className="flex items-center gap-1 mt-2 text-sm text-gray-500 hover:text-merogreen">
                                     <ThumbsUp size={14} />
@@ -739,7 +788,10 @@ const ProductDetails = () => {
                         {relatedProduct.name}
                       </h3>
                       <div className="flex items-center gap-1 mb-2">
-                        <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                        <Star
+                          size={14}
+                          className="fill-yellow-400 text-yellow-400"
+                        />
                         <span className="text-sm text-gray-600">
                           {relatedProduct.rating?.toFixed(1) || "0.0"}
                         </span>

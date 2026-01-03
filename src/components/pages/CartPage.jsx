@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Minus,
@@ -13,40 +13,49 @@ import axios from "axios";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
+import { useCartStore } from "../../store/lib/cartStore";
+import { useTracking } from "../../hooks/useTracking";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
 const ESEWA_PAYMENT_URL = import.meta.env.VITE_ESEWA_PAYMENT_URL;
 
 const getImageUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `${API_URL.replace("/api", "")}${url}`;
+  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${BASE_URL}${cleanUrl}`;
 };
 
 const CartPage = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const token = localStorage.getItem("auth_token");
+  const token = useAuthStore((state) => state.token);
 
-  const [step, setStep] = useState(1);
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
+  // Tracking hook
+  const { trackRemoveFromCart } = useTracking();
 
-  // Shipping form state
-  const [shippingAddress, setShippingAddress] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    postalCode: "",
-  });
+  // Cart store
+  const {
+    cart,
+    loading,
+    updating,
+    step,
+    shippingAddress,
+    paymentMethod,
+    placingOrder,
+    setStep,
+    setShippingAddress,
+    setPaymentMethod,
+    setPlacingOrder,
+    fetchCart,
+    updateQuantity,
+    removeItem,
+    initShippingFromUser,
+    getCartTotals,
+  } = useCartStore();
 
-  // Payment state
-  const [paymentMethod, setPaymentMethod] = useState("esewa");
-  const [placingOrder, setPlacingOrder] = useState(false);
-  const [esewaPaymentData, setEsewaPaymentData] = useState(null);
+  const [esewaPaymentData, setEsewaPaymentData] = React.useState(null);
   const esewaFormRef = useRef(null);
 
   useEffect(() => {
@@ -54,18 +63,14 @@ const CartPage = () => {
       navigate("/login");
       return;
     }
-    fetchCart();
-  }, [token]);
+    fetchCart(token);
+  }, [token, fetchCart, navigate]);
 
   useEffect(() => {
     if (user) {
-      setShippingAddress((prev) => ({
-        ...prev,
-        fullName: user.fullName || "",
-        email: user.email || "",
-      }));
+      initShippingFromUser(user);
     }
-  }, [user]);
+  }, [user, initShippingFromUser]);
 
   // Submit eSewa form when payment data is ready
   useEffect(() => {
@@ -74,50 +79,17 @@ const CartPage = () => {
     }
   }, [esewaPaymentData]);
 
-  const fetchCart = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCart(response.data);
-    } catch (err) {
-      console.error("Failed to fetch cart:", err);
-    } finally {
-      setLoading(false);
+  const handleUpdateQuantity = async (productId, newQuantity) => {
+    const result = await updateQuantity(token, productId, newQuantity);
+    if (!result.success) {
+      alert(result.message);
     }
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
-    try {
-      setUpdating(true);
-      const response = await axios.put(
-        `${API_URL}/cart/update`,
-        { productId, quantity: newQuantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCart(response.data);
-    } catch (err) {
-      console.error("Failed to update quantity:", err);
-      alert(err.response?.data?.message || "Failed to update quantity");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const removeItem = async (productId) => {
-    try {
-      setUpdating(true);
-      const response = await axios.delete(
-        `${API_URL}/cart/remove/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCart(response.data);
-    } catch (err) {
-      console.error("Failed to remove item:", err);
-    } finally {
-      setUpdating(false);
-    }
+  const handleRemoveItem = async (productId) => {
+    // Track remove from cart event for analytics
+    trackRemoveFromCart(productId);
+    await removeItem(token, productId);
   };
 
   const handlePlaceOrder = async () => {
@@ -162,13 +134,12 @@ const CartPage = () => {
     }
   };
 
-  // Calculate totals
-  const subtotal =
-    cart?.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
-    0;
-  const shipping = subtotal >= 1000 ? 0 : 100;
-  const tax = Math.round(subtotal * 0.05);
-  const total = subtotal + shipping + tax;
+  const handleShippingChange = (field, value) => {
+    setShippingAddress({ ...shippingAddress, [field]: value });
+  };
+
+  // Calculate totals using store method
+  const { subtotal, shipping, tax, total } = getCartTotals();
 
   const steps = [
     { number: 1, label: "Cart" },
@@ -298,7 +269,7 @@ const CartPage = () => {
                               </p>
                             </div>
                             <button
-                              onClick={() => removeItem(item.product._id)}
+                              onClick={() => handleRemoveItem(item.product._id)}
                               className="text-gray-400 hover:text-red-500 transition"
                             >
                               <X size={20} />
@@ -310,7 +281,7 @@ const CartPage = () => {
                             <div className="flex items-center border border-gray-300 rounded-lg">
                               <button
                                 onClick={() =>
-                                  updateQuantity(
+                                  handleUpdateQuantity(
                                     item.product._id,
                                     item.quantity - 1
                                   )
@@ -325,7 +296,7 @@ const CartPage = () => {
                               </span>
                               <button
                                 onClick={() =>
-                                  updateQuantity(
+                                  handleUpdateQuantity(
                                     item.product._id,
                                     item.quantity + 1
                                   )
@@ -423,10 +394,7 @@ const CartPage = () => {
                       type="text"
                       value={shippingAddress.fullName}
                       onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          fullName: e.target.value,
-                        })
+                        handleShippingChange("fullName", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                       placeholder="John Doe"
@@ -442,10 +410,7 @@ const CartPage = () => {
                         type="email"
                         value={shippingAddress.email}
                         onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            email: e.target.value,
-                          })
+                          handleShippingChange("email", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                         placeholder="john@example.com"
@@ -459,10 +424,7 @@ const CartPage = () => {
                         type="tel"
                         value={shippingAddress.phone}
                         onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            phone: e.target.value,
-                          })
+                          handleShippingChange("phone", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                         placeholder="+977 9800000000"
@@ -478,10 +440,7 @@ const CartPage = () => {
                       type="text"
                       value={shippingAddress.address}
                       onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          address: e.target.value,
-                        })
+                        handleShippingChange("address", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                       placeholder="Street address"
@@ -497,10 +456,7 @@ const CartPage = () => {
                         type="text"
                         value={shippingAddress.city}
                         onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            city: e.target.value,
-                          })
+                          handleShippingChange("city", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                         placeholder="Kathmandu"
@@ -514,10 +470,7 @@ const CartPage = () => {
                         type="text"
                         value={shippingAddress.postalCode}
                         onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            postalCode: e.target.value,
-                          })
+                          handleShippingChange("postalCode", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
                         placeholder="44600"

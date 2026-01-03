@@ -1,24 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart, Menu, X, User, LogOut } from "lucide-react";
-import axios from "axios";
 import Logo from "../../assets/images/Logo.svg";
 import { useAuthStore } from "../../store/lib/authStore";
+import { useCartStore } from "../../store/lib/cartStore";
+import { useWishlistStore } from "../../store/lib/wishlistStore";
 import { useLogout } from "../../hooks/useAuth";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const logout = useLogout();
+
+  // Use stores for counts
+  const cartCount = useCartStore((state) => state.cartCount);
+  const wishlistCount = useWishlistStore((state) => state.wishlistCount);
+  const fetchCartCount = useCartStore((state) => state.fetchCartCount);
+  const fetchWishlistCount = useWishlistStore(
+    (state) => state.fetchWishlistCount
+  );
+  const clearCart = useCartStore((state) => state.clearCart);
+  const clearWishlist = useWishlistStore((state) => state.clearWishlist);
 
   const navLinks = [
     { name: "Shop", href: "/shop" },
@@ -27,35 +34,13 @@ const Navbar = () => {
     { name: "Contact Us", href: "/contact" },
   ];
 
-  // Fetch cart and wishlist counts
+  // Fetch cart and wishlist counts when user logs in
   useEffect(() => {
     if (user && token) {
-      fetchCounts();
-    } else {
-      setCartCount(0);
-      setWishlistCount(0);
+      fetchCartCount(token);
+      fetchWishlistCount(token);
     }
-  }, [user, token]);
-
-  const fetchCounts = async () => {
-    const authToken = localStorage.getItem("auth_token");
-    if (!authToken) return;
-
-    try {
-      const [cartRes, wishlistRes] = await Promise.all([
-        axios.get(`${API_URL}/cart/count`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }),
-        axios.get(`${API_URL}/wishlist/count`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }),
-      ]);
-      setCartCount(cartRes.data.count || 0);
-      setWishlistCount(wishlistRes.data.count || 0);
-    } catch (err) {
-      console.error("Failed to fetch counts:", err);
-    }
-  };
+  }, [user, token, fetchCartCount, fetchWishlistCount]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -71,9 +56,9 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+    clearCart();
+    clearWishlist();
     setDropdownOpen(false);
-    setCartCount(0);
-    setWishlistCount(0);
     navigate("/");
   };
 

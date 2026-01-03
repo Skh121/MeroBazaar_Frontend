@@ -3,19 +3,19 @@
 
 @theme {
   /* Primary brand color */
-  --color-merogreen: #00A63E;
-  --color-primary: #00A63E;
+  --color-merogreen: #00a63e;
+  --color-primary: #00a63e;
 
   /* Status colors */
-  --color-success: #16A34A;
-  --color-danger: #DC2626;
-  --color-warning: #F59E0B;
-  --color-info: #3B82F6;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
 
   /* Neutral colors */
-  --color-dark: #0F172A;
-  --color-light: #F8FAFC;
-  --color-muted: #94A3B8;
+  --color-dark: #0f172a;
+  --color-light: #f8fafc;
+  --color-muted: #94a3b8;
 
   /* Font family */
   --font-outfit: "Outfit", sans-serif;
