@@ -1,10 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   loginApi,
   signupApi,
   forgotPasswordApi,
   verifyOTPApi,
   resetPasswordApi,
+  googleAuthApi,
   vendorLoginApi,
   vendorSignupApi,
   adminLoginApi,
@@ -29,6 +31,10 @@ export const useLogin = () => {
         role: data.role,
         token: data.token,
       });
+      toast.success(`Welcome back, ${data.fullName}!`);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Login failed");
     },
   });
 };
@@ -47,6 +53,10 @@ export const useSignup = () => {
         role: data.role,
         token: data.token,
       });
+      toast.success("Account created successfully!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Signup failed");
     },
   });
 };
@@ -54,12 +64,24 @@ export const useSignup = () => {
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (email) => forgotPasswordApi(email),
+    onSuccess: () => {
+      toast.success("OTP sent to your email");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to send OTP");
+    },
   });
 };
 
 export const useVerifyOTP = () => {
   return useMutation({
     mutationFn: ({ email, otp }) => verifyOTPApi(email, otp),
+    onSuccess: () => {
+      toast.success("OTP verified successfully");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Invalid OTP");
+    },
   });
 };
 
@@ -67,6 +89,42 @@ export const useResetPassword = () => {
   return useMutation({
     mutationFn: ({ email, otp, newPassword }) =>
       resetPasswordApi(email, otp, newPassword),
+    onSuccess: () => {
+      toast.success("Password reset successfully");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to reset password");
+    },
+  });
+};
+
+export const useGoogleAuth = () => {
+  const setUser = useAuthStore((state) => state.setUser);
+
+  return useMutation({
+    mutationFn: (credential) => googleAuthApi(credential),
+    onSuccess: (data) => {
+      saveToken(data.token);
+      setUser({
+        id: data._id,
+        fullName: data.fullName,
+        email: data.email,
+        role: data.role,
+        avatar: data.avatar,
+        authProvider: data.authProvider,
+        token: data.token,
+      });
+      if (data.isLinked) {
+        toast.success("Google account linked successfully!");
+      } else if (data.isNewUser) {
+        toast.success("Account created with Google!");
+      } else {
+        toast.success(`Welcome back, ${data.fullName}!`);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Google sign-in failed");
+    },
   });
 };
 
@@ -95,6 +153,10 @@ export const useVendorLogin = () => {
         token: data.token,
         vendorData: data,
       });
+      toast.success("Welcome to your vendor dashboard!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Vendor login failed");
     },
   });
 };
@@ -102,6 +164,12 @@ export const useVendorLogin = () => {
 export const useVendorSignup = () => {
   return useMutation({
     mutationFn: (vendorData) => vendorSignupApi(vendorData),
+    onSuccess: () => {
+      toast.success("Registration submitted successfully!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Registration failed");
+    },
   });
 };
 
@@ -120,6 +188,10 @@ export const useAdminLogin = () => {
         role: "admin",
         token: data.token,
       });
+      toast.success("Welcome, Admin!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Admin login failed");
     },
   });
 };
@@ -140,6 +212,12 @@ export const useApproveVendor = () => {
 
   return useMutation({
     mutationFn: (vendorId) => approveVendorApi(vendorId, token),
+    onSuccess: () => {
+      toast.success("Vendor approved successfully");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to approve vendor");
+    },
   });
 };
 
@@ -148,5 +226,11 @@ export const useRejectVendor = () => {
 
   return useMutation({
     mutationFn: (vendorId) => rejectVendorApi(vendorId, token),
+    onSuccess: () => {
+      toast.success("Vendor rejected");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to reject vendor");
+    },
   });
 };

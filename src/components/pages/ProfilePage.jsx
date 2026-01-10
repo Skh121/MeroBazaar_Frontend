@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -24,6 +24,7 @@ const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.setUser);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
   // Profile store
   const {
@@ -33,6 +34,7 @@ const ProfilePage = () => {
     activeTab,
     loading,
     saving,
+    uploadingAvatar,
     ordersLoading,
     message,
     newAddress,
@@ -47,7 +49,11 @@ const ProfilePage = () => {
     savePersonalInfo,
     saveAddress,
     changePassword,
+    uploadAvatar,
   } = useProfileStore();
+
+  // Avatar file input ref
+  const avatarInputRef = useRef(null);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -85,6 +91,38 @@ const ProfilePage = () => {
 
   const handleChangePassword = async () => {
     await changePassword(token);
+  };
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please select an image file (JPEG, PNG, GIF, or WebP)");
+      return;
+    }
+
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File size must be less than 2MB");
+      return;
+    }
+
+    await uploadAvatar(token, file, updateUser);
+    // Reset input
+    e.target.value = "";
   };
 
   // Get user initials
@@ -131,7 +169,7 @@ const ProfilePage = () => {
                 {/* Avatar */}
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-merogreen text-white flex items-center justify-center text-3xl font-bold">
+                    <div className="w-24 h-24 rounded-full bg-merogreen text-white flex items-center justify-center text-3xl font-bold overflow-hidden">
                       {user.avatar ? (
                         <img
                           src={user.avatar}
@@ -141,8 +179,27 @@ const ProfilePage = () => {
                       ) : (
                         getInitials(user.fullName)
                       )}
+                      {uploadingAvatar && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                          <Loader2
+                            size={24}
+                            className="text-white animate-spin"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <button className="absolute bottom-0 right-0 w-8 h-8 bg-merogreen rounded-full flex items-center justify-center text-white shadow-lg hover:bg-green-700 transition">
+                    <input
+                      type="file"
+                      ref={avatarInputRef}
+                      onChange={handleAvatarChange}
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={handleAvatarClick}
+                      disabled={uploadingAvatar}
+                      className="absolute bottom-0 right-0 w-8 h-8 bg-merogreen rounded-full flex items-center justify-center text-white shadow-lg hover:bg-green-700 transition disabled:opacity-50"
+                    >
                       <Camera size={16} />
                     </button>
                   </div>

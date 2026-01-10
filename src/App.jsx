@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 // Customer Auth Pages
 import SignupPage from "./components/pages/Auth/SignupPage.jsx";
@@ -24,6 +25,8 @@ import WishlistPage from "./components/pages/WishlistPage.jsx";
 import OrderSuccessPage from "./components/pages/OrderSuccessPage.jsx";
 import PaymentSuccessPage from "./components/pages/PaymentSuccessPage.jsx";
 import PaymentFailurePage from "./components/pages/PaymentFailurePage.jsx";
+import RecommendationsPage from "./components/pages/RecommendationsPage.jsx";
+import RegionalSpecialtiesPage from "./components/pages/RegionalSpecialtiesPage.jsx";
 
 // Vendor Pages
 import VendorLoginPage from "./components/pages/Vendor/VendorLoginPage.jsx";
@@ -57,6 +60,31 @@ const CustomerHome = () => (
 function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#fff",
+            color: "#333",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            borderRadius: "8px",
+            padding: "12px 16px",
+          },
+          success: {
+            iconTheme: {
+              primary: "#016630",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#dc2626",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
       <div className="App min-h-screen bg-gray-50">
         <Routes>
           {/* Public Authentication Routes (Customer & Admin use same login) */}
@@ -76,6 +104,12 @@ function App() {
 
           {/* Shop Routes */}
           <Route path="/shop" element={<ShopPage />} />
+
+          {/* Recommendations Route */}
+          <Route path="/recommendations" element={<RecommendationsPage />} />
+
+          {/* Regional Specialties Route */}
+          <Route path="/districts" element={<RegionalSpecialtiesPage />} />
 
           {/* Product Routes */}
           <Route path="/product/:id" element={<ProductDetails />} />
