@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import VendorProducts from "./VendorProducts";
 import VendorAnalyticsContent from "./VendorAnalyticsContent";
+import VendorSettings from "./VendorSettings";
+import VendorDashboardContent from "./VendorDashboardContent";
+import Logo from "../../../assets/images/Logo.svg";
 import {
   LayoutDashboard,
   Package,
@@ -14,16 +18,9 @@ import {
   Search,
   Menu,
   X,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  Clock,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  MoreVertical,
   Loader2,
   CheckCircle,
   Truck,
@@ -59,88 +56,6 @@ const MENU_ITEMS = [
     icon: Settings,
     path: "/vendor/settings",
   },
-];
-
-const SAMPLE_STATS = [
-  {
-    label: "Total Revenue",
-    value: "Rs. 2,45,890",
-    change: "+12.5%",
-    isPositive: true,
-    icon: DollarSign,
-  },
-  {
-    label: "Total Orders",
-    value: "1,234",
-    change: "+8.2%",
-    isPositive: true,
-    icon: ShoppingCart,
-  },
-  {
-    label: "Total Products",
-    value: "156",
-    change: "+3",
-    isPositive: true,
-    icon: Package,
-  },
-  {
-    label: "Customers",
-    value: "892",
-    change: "+5.1%",
-    isPositive: true,
-    icon: Users,
-  },
-];
-
-const SAMPLE_ORDERS = [
-  {
-    id: "ORD001",
-    customer: "Ram Sharma",
-    product: "Organic Honey",
-    amount: "Rs. 1,250",
-    status: "Delivered",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD002",
-    customer: "Sita Devi",
-    product: "Himalayan Salt",
-    amount: "Rs. 450",
-    status: "Processing",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD003",
-    customer: "Hari Prasad",
-    product: "Pashmina Shawl",
-    amount: "Rs. 8,500",
-    status: "Shipped",
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD004",
-    customer: "Maya Thapa",
-    product: "Coffee Beans",
-    amount: "Rs. 2,100",
-    status: "Pending",
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD005",
-    customer: "Bikash KC",
-    product: "Handmade Soap Set",
-    amount: "Rs. 890",
-    status: "Delivered",
-    date: "2024-01-13",
-  },
-];
-
-const SAMPLE_PRODUCTS = [
-  { name: "Organic Honey", sales: 245, stock: 50, revenue: "Rs. 98,000" },
-  { name: "Himalayan Salt", sales: 189, stock: 120, revenue: "Rs. 45,360" },
-  { name: "Pashmina Shawl", sales: 67, stock: 25, revenue: "Rs. 1,67,500" },
-  { name: "Coffee Beans", sales: 156, stock: 80, revenue: "Rs. 62,400" },
-  { name: "Handmade Soap", sales: 312, stock: 200, revenue: "Rs. 46,800" },
 ];
 
 const ORDERS_PER_PAGE = 10;
@@ -213,10 +128,11 @@ const VendorDashboard = () => {
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      toast.success(`Order marked as ${status}`);
       fetchOrders();
     } catch (err) {
       console.error("Failed to update order:", err);
-      alert(err.response?.data?.message || "Failed to update order");
+      toast.error(err.response?.data?.message || "Failed to update order");
     } finally {
       setUpdatingOrder(null);
     }
@@ -279,12 +195,13 @@ const VendorDashboard = () => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           <Link to="/vendor/dashboard" className="flex items-center">
             {sidebarOpen ? (
-              <h1 className="text-xl font-bold">
-                <span className="text-merogreen">Mero</span>
-                <span className="text-gray-800">Bazaar</span>
-              </h1>
+              <img src={Logo} alt="MeroBazaar" className="h-8 w-auto" />
             ) : (
-              <span className="text-2xl font-bold text-merogreen">M</span>
+              <img
+                src={Logo}
+                alt="MeroBazaar"
+                className="h-8 w-8 object-contain"
+              />
             )}
           </Link>
           {mobile && (
@@ -361,25 +278,9 @@ const VendorDashboard = () => {
             >
               <Menu size={20} />
             </button>
-
-            {/* Search */}
-            <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-transparent border-none outline-none ml-2 w-48 text-sm"
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Notifications */}
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
-
             {/* User Menu */}
             <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
               <div className="w-8 h-8 bg-merogreen rounded-full flex items-center justify-center text-white font-medium">
@@ -603,206 +504,9 @@ const VendorDashboard = () => {
           ) : activeMenu === "analytics" ? (
             <VendorAnalyticsContent />
           ) : activeMenu === "settings" ? (
-            <div>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-                <p className="text-gray-500">Manage your store settings</p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
-                <Settings size={48} className="mx-auto mb-2 opacity-30" />
-                <p>Settings page coming soon</p>
-              </div>
-            </div>
+            <VendorSettings />
           ) : (
-            <>
-              {/* Dashboard Content */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-                <p className="text-gray-500">
-                  Welcome back! Here's what's happening with your store.
-                </p>
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                      <DollarSign size={20} className="text-merogreen" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    Rs.{stats?.totalRevenue || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">Total Revenue</p>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <ShoppingCart size={20} className="text-blue-600" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {stats?.totalOrders || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">Total Orders</p>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-                      <Clock size={20} className="text-yellow-600" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {stats?.pendingOrders || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">Pending Orders</p>
-                </div>
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                      <CheckCircle size={20} className="text-green-600" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {stats?.completedOrders || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">Completed Orders</p>
-                </div>
-              </div>
-
-              {/* Charts and Tables Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Revenue Chart Placeholder */}
-                <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-800">
-                      Revenue Overview
-                    </h3>
-                    <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-merogreen">
-                      <option>Last 7 days</option>
-                      <option>Last 30 days</option>
-                      <option>Last 3 months</option>
-                    </select>
-                  </div>
-                  <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                    <div className="text-center text-gray-400">
-                      <BarChart3
-                        size={48}
-                        className="mx-auto mb-2 opacity-50"
-                      />
-                      <p>Revenue chart will be displayed here</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Top Products */}
-                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <h3 className="font-semibold text-gray-800 mb-4">
-                    Top Products
-                  </h3>
-                  <div className="space-y-4">
-                    {SAMPLE_PRODUCTS.slice(0, 4).map((product, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 font-medium">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800 truncate">
-                            {product.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {product.sales} sales
-                          </p>
-                        </div>
-                        <p className="text-sm font-medium text-merogreen">
-                          {product.revenue}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Orders Table */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="font-semibold text-gray-800">Recent Orders</h3>
-                  <Link
-                    to="/vendor/orders"
-                    className="text-sm text-merogreen font-medium hover:underline"
-                  >
-                    View All
-                  </Link>
-                </div>
-                {orders.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <ShoppingCart
-                      size={32}
-                      className="mx-auto mb-2 opacity-30"
-                    />
-                    <p>No orders yet</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Order ID
-                          </th>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Customer
-                          </th>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Items
-                          </th>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Amount
-                          </th>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Date
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {orders.slice(0, 5).map((order) => (
-                          <tr key={order._id} className="hover:bg-gray-50">
-                            <td className="px-5 py-4 text-sm font-medium text-gray-800">
-                              {order.orderNumber}
-                            </td>
-                            <td className="px-5 py-4 text-sm text-gray-600">
-                              {order.user?.fullName || "N/A"}
-                            </td>
-                            <td className="px-5 py-4 text-sm text-gray-600">
-                              {order.items.length} item(s)
-                            </td>
-                            <td className="px-5 py-4 text-sm font-medium text-gray-800">
-                              Rs.{order.total}
-                            </td>
-                            <td className="px-5 py-4">
-                              <span
-                                className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                  order.orderStatus
-                                )}`}
-                              >
-                                {order.orderStatus}
-                              </span>
-                            </td>
-                            <td className="px-5 py-4 text-sm text-gray-500">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </>
+            <VendorDashboardContent />
           )}
         </main>
       </div>

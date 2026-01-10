@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -20,6 +21,7 @@ export const useProfileStore = create((set, get) => ({
   activeTab: "personal",
   loading: false,
   saving: false,
+  uploadingAvatar: false,
   ordersLoading: false,
   message: { type: "", text: "" },
 
@@ -162,7 +164,8 @@ export const useProfileStore = create((set, get) => ({
     try {
       set({ saving: true, message: { type: "", text: "" } });
 
-      const fullName = `${personalInfo.firstName} ${personalInfo.lastName}`.trim();
+      const fullName =
+        `${personalInfo.firstName} ${personalInfo.lastName}`.trim();
 
       await axios.put(
         `${API_URL}/users/profile`,
@@ -180,12 +183,13 @@ export const useProfileStore = create((set, get) => ({
         setUser({ ...user, fullName, token });
       }
 
-      set({ message: { type: "success", text: "Profile updated successfully!" } });
+      toast.success("Profile updated successfully!");
       return { success: true };
     } catch (err) {
       console.error("Failed to update profile:", err);
-      const errorMsg = err.response?.data?.message || "Failed to update profile";
-      set({ message: { type: "error", text: errorMsg } });
+      const errorMsg =
+        err.response?.data?.message || "Failed to update profile";
+      toast.error(errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
@@ -204,12 +208,12 @@ export const useProfileStore = create((set, get) => ({
       get().resetNewAddress();
       await get().fetchProfile(token);
 
-      set({ message: { type: "success", text: "Address added successfully!" } });
+      toast.success("Address added successfully!");
       return { success: true };
     } catch (err) {
       console.error("Failed to add address:", err);
       const errorMsg = err.response?.data?.message || "Failed to add address";
-      set({ message: { type: "error", text: errorMsg } });
+      toast.error(errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
@@ -220,7 +224,7 @@ export const useProfileStore = create((set, get) => ({
     const { security } = get();
 
     if (security.newPassword !== security.confirmPassword) {
-      set({ message: { type: "error", text: "Passwords do not match" } });
+      toast.error("Passwords do not match");
       return { success: false, message: "Passwords do not match" };
     }
 
@@ -237,15 +241,54 @@ export const useProfileStore = create((set, get) => ({
       );
 
       get().resetSecurity();
-      set({ message: { type: "success", text: "Password changed successfully!" } });
+      toast.success("Password changed successfully!");
       return { success: true };
     } catch (err) {
       console.error("Failed to change password:", err);
-      const errorMsg = err.response?.data?.message || "Failed to change password";
-      set({ message: { type: "error", text: errorMsg } });
+      const errorMsg =
+        err.response?.data?.message || "Failed to change password";
+      toast.error(errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
+    }
+  },
+
+  uploadAvatar: async (token, file, updateUser) => {
+    try {
+      set({ uploadingAvatar: true, message: { type: "", text: "" } });
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const response = await axios.post(`${API_URL}/users/avatar`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Build full avatar URL
+      const baseUrl =
+        import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ||
+        "http://localhost:5000";
+      const avatarUrl = `${baseUrl}${response.data.avatar}`;
+
+      // Update auth store with new avatar
+      if (updateUser) {
+        updateUser({ avatar: avatarUrl });
+      }
+
+      toast.success("Profile picture updated!");
+      return { success: true, avatar: avatarUrl };
+    } catch (err) {
+      console.error("Failed to upload avatar:", err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to upload profile picture";
+      toast.error(errorMsg);
+      return { success: false, message: errorMsg };
+    } finally {
+      set({ uploadingAvatar: false });
     }
   },
 

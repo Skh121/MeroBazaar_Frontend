@@ -115,7 +115,10 @@ const DynamicPricingPage = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Dynamic Pricing" subtitle="ML-powered price optimization">
+      <AdminLayout
+        title="Dynamic Pricing"
+        subtitle="ML-powered price optimization"
+      >
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-merogreen" />
         </div>
@@ -135,7 +138,9 @@ const DynamicPricingPage = () => {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dynamic Pricing</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Dynamic Pricing
+            </h1>
             <p className="text-gray-500">ML-powered price optimization</p>
           </div>
         </div>
@@ -167,9 +172,12 @@ const DynamicPricingPage = () => {
       {prices.length === 0 ? (
         <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
           <DollarSign size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Pricing Data Available</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Pricing Data Available
+          </h3>
           <p className="text-gray-500 mb-6">
-            Dynamic pricing recommendations will appear here once calculated from product performance data.
+            Dynamic pricing recommendations will appear here once calculated
+            from product performance data.
           </p>
         </div>
       ) : (
@@ -203,9 +211,13 @@ const DynamicPricingPage = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {prices.map((price, index) => {
-                  const currentPrice = price.basePrice || price.product?.price || 0;
+                  const currentPrice =
+                    price.basePrice || price.product?.price || 0;
                   const priceChange = price.recommendedPrice - currentPrice;
-                  const priceChangePercent = currentPrice > 0 ? ((priceChange / currentPrice) * 100).toFixed(1) : 0;
+                  const priceChangePercent =
+                    currentPrice > 0
+                      ? ((priceChange / currentPrice) * 100).toFixed(1)
+                      : 0;
 
                   return (
                     <tr key={price._id || index} className="hover:bg-gray-50">
@@ -216,7 +228,8 @@ const DynamicPricingPage = () => {
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">
-                              {price.product?.name || `Product ${price.productId}`}
+                              {price.product?.name ||
+                                `Product ${price.productId}`}
                             </p>
                             <p className="text-sm text-gray-500">
                               {price.product?.category || "Uncategorized"}
@@ -231,11 +244,16 @@ const DynamicPricingPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-medium text-merogreen">
-                          Rs. {price.recommendedPrice?.toLocaleString() || "N/A"}
+                          Rs.{" "}
+                          {price.recommendedPrice?.toLocaleString() || "N/A"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`font-medium ${getPriceChangeColor(priceChange)}`}>
+                        <span
+                          className={`font-medium ${getPriceChangeColor(
+                            priceChange
+                          )}`}
+                        >
                           {priceChange > 0 ? "+" : ""}
                           {priceChangePercent}%
                         </span>
@@ -245,7 +263,9 @@ const DynamicPricingPage = () => {
                           <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-merogreen rounded-full"
-                              style={{ width: `${(price.confidence || 0.7) * 100}%` }}
+                              style={{
+                                width: `${(price.confidence || 0.7) * 100}%`,
+                              }}
                             />
                           </div>
                           <span className="text-sm text-gray-600">
@@ -254,12 +274,20 @@ const DynamicPricingPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {getRecommendationBadge(price.adjustmentPercentage > 0 ? "increase" : price.adjustmentPercentage < 0 ? "decrease" : "maintain")}
+                        {getRecommendationBadge(
+                          price.adjustmentPercentage > 0
+                            ? "increase"
+                            : price.adjustmentPercentage < 0
+                            ? "decrease"
+                            : "maintain"
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleCalculatePrice(price.product?._id)}
+                            onClick={() =>
+                              handleCalculatePrice(price.product?._id)
+                            }
                             disabled={calculating === price.product?._id}
                             className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
                           >
@@ -270,7 +298,9 @@ const DynamicPricingPage = () => {
                             )}
                           </button>
                           <button
-                            onClick={() => handleApplyPrice(price.product?._id, price._id)}
+                            onClick={() =>
+                              handleApplyPrice(price.product?._id, price._id)
+                            }
                             disabled={applying === price._id || price.applied}
                             className="px-3 py-1.5 text-sm bg-merogreen text-white rounded-lg hover:bg-merogreen-dark transition disabled:opacity-50"
                           >
@@ -300,11 +330,15 @@ const DynamicPricingPage = () => {
             <DollarSign size={24} className="text-green-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-green-900 mb-2">About Dynamic Pricing</h3>
+            <h3 className="font-semibold text-green-900 mb-2">
+              About Dynamic Pricing
+            </h3>
             <p className="text-green-700 text-sm">
-              Our dynamic pricing engine uses machine learning to analyze demand patterns, competitor prices,
-              inventory levels, and market conditions. Recommendations are generated to maximize revenue while
-              maintaining competitive positioning. Always review recommendations before applying.
+              Our dynamic pricing engine uses machine learning to analyze demand
+              patterns, competitor prices, inventory levels, and market
+              conditions. Recommendations are generated to maximize revenue
+              while maintaining competitive positioning. Always review
+              recommendations before applying.
             </p>
           </div>
         </div>

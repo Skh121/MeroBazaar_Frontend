@@ -5,7 +5,11 @@ import axios from "axios";
 import { useAuthStore } from "../../store/lib/authStore";
 import { useCartStore } from "../../store/lib/cartStore";
 import { useWishlistStore } from "../../store/lib/wishlistStore";
-import { getRecommendations, getSimilarProducts, trackEvent } from "../../store/api/analyticsApi";
+import {
+  getRecommendations,
+  getSimilarProducts,
+  trackEvent,
+} from "../../store/api/analyticsApi";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
@@ -203,8 +207,13 @@ const ProductRecommendations = ({
                 {/* Rating */}
                 {product.rating > 0 && (
                   <div className="flex items-center gap-1 mb-2">
-                    <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs text-gray-500">{product.rating?.toFixed(1)}</span>
+                    <Star
+                      size={12}
+                      className="fill-yellow-400 text-yellow-400"
+                    />
+                    <span className="text-xs text-gray-500">
+                      {product.rating?.toFixed(1)}
+                    </span>
                   </div>
                 )}
 
@@ -219,7 +228,10 @@ const ProductRecommendations = ({
                     className="p-1.5 rounded-full bg-merogreen/10 hover:bg-merogreen/20 transition"
                   >
                     {addingToCart === productId ? (
-                      <Loader2 size={14} className="animate-spin text-merogreen" />
+                      <Loader2
+                        size={14}
+                        className="animate-spin text-merogreen"
+                      />
                     ) : (
                       <ShoppingCart size={14} className="text-merogreen" />
                     )}

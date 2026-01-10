@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -53,7 +54,10 @@ export const useWishlistStore = create((set, get) => ({
   },
 
   addToWishlist: async (token, productId) => {
-    if (!token) return { success: false, message: "Please login first" };
+    if (!token) {
+      toast.error("Please login first");
+      return { success: false, message: "Please login first" };
+    }
     try {
       const response = await axios.post(
         `${API_URL}/wishlist`,
@@ -61,12 +65,16 @@ export const useWishlistStore = create((set, get) => ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       get().setWishlist(response.data);
+      toast.success("Added to wishlist!");
       return { success: true };
     } catch (err) {
       console.error("Failed to add to wishlist:", err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to add to wishlist";
+      toast.error(errorMsg);
       return {
         success: false,
-        message: err.response?.data?.message || "Failed to add to wishlist",
+        message: errorMsg,
       };
     }
   },
@@ -78,12 +86,16 @@ export const useWishlistStore = create((set, get) => ({
         headers: { Authorization: `Bearer ${token}` },
       });
       get().setWishlist(response.data);
+      toast.success("Removed from wishlist");
       return { success: true };
     } catch (err) {
       console.error("Failed to remove from wishlist:", err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to remove from wishlist";
+      toast.error(errorMsg);
       return {
         success: false,
-        message: err.response?.data?.message || "Failed to remove from wishlist",
+        message: errorMsg,
       };
     }
   },
@@ -118,6 +130,8 @@ export const useWishlistStore = create((set, get) => ({
     if (activeCategory === "All Items") {
       return wishlist?.products || [];
     }
-    return wishlist?.products?.filter((p) => p.category === activeCategory) || [];
+    return (
+      wishlist?.products?.filter((p) => p.category === activeCategory) || []
+    );
   },
 }));

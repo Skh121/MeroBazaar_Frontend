@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -30,7 +31,8 @@ export const useCartStore = create(
       setCart: (cart) => {
         set({
           cart,
-          cartCount: cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0,
+          cartCount:
+            cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0,
         });
       },
 
@@ -82,7 +84,10 @@ export const useCartStore = create(
       },
 
       addToCart: async (token, productId, quantity = 1) => {
-        if (!token) return { success: false, message: "Please login first" };
+        if (!token) {
+          toast.error("Please login first");
+          return { success: false, message: "Please login first" };
+        }
         try {
           set({ updating: true });
           const response = await axios.post(
@@ -91,12 +96,16 @@ export const useCartStore = create(
             { headers: { Authorization: `Bearer ${token}` } }
           );
           get().setCart(response.data);
+          toast.success("Added to cart!");
           return { success: true };
         } catch (err) {
           console.error("Failed to add to cart:", err);
+          const errorMsg =
+            err.response?.data?.message || "Failed to add to cart";
+          toast.error(errorMsg);
           return {
             success: false,
-            message: err.response?.data?.message || "Failed to add to cart",
+            message: errorMsg,
           };
         } finally {
           set({ updating: false });
@@ -116,9 +125,12 @@ export const useCartStore = create(
           return { success: true };
         } catch (err) {
           console.error("Failed to update quantity:", err);
+          const errorMsg =
+            err.response?.data?.message || "Failed to update quantity";
+          toast.error(errorMsg);
           return {
             success: false,
-            message: err.response?.data?.message || "Failed to update quantity",
+            message: errorMsg,
           };
         } finally {
           set({ updating: false });
@@ -134,8 +146,10 @@ export const useCartStore = create(
             { headers: { Authorization: `Bearer ${token}` } }
           );
           get().setCart(response.data);
+          toast.success("Item removed from cart");
         } catch (err) {
           console.error("Failed to remove item:", err);
+          toast.error("Failed to remove item");
         } finally {
           set({ updating: false });
         }
@@ -176,7 +190,10 @@ export const useCartStore = create(
       getCartTotals: () => {
         const { cart } = get();
         const subtotal =
-          cart?.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+          cart?.items?.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          ) || 0;
         const shipping = subtotal >= 1000 ? 0 : 100;
         const tax = Math.round(subtotal * 0.05);
         const total = subtotal + shipping + tax;

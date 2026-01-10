@@ -9,12 +9,11 @@ import {
   Upload,
   Package,
   Loader2,
-  AlertCircle,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../../../store/lib/authStore";
 
 const CATEGORIES = [
@@ -40,7 +39,6 @@ const VendorProducts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
-  const [notification, setNotification] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const token = useAuthStore((state) => state.token);
@@ -76,15 +74,10 @@ const VendorProducts = () => {
       setProducts(response.data.products || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
-      showNotification("Failed to load products", "error");
+      toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
-  };
-
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
   };
 
   const resetForm = () => {
@@ -156,7 +149,7 @@ const VendorProducts = () => {
     // Check total images limit (5 max)
     const totalImages = imagePreviews.length + files.length;
     if (totalImages > 5) {
-      showNotification("Maximum 5 images allowed", "error");
+      toast.error("Maximum 5 images allowed");
       return;
     }
 
@@ -263,10 +256,10 @@ const VendorProducts = () => {
           productData,
           config
         );
-        showNotification("Product updated successfully");
+        toast.success("Product updated successfully");
       } else {
         await axios.post(`${API_URL}/products`, productData, config);
-        showNotification("Product created successfully");
+        toast.success("Product created successfully");
       }
 
       setShowModal(false);
@@ -274,10 +267,7 @@ const VendorProducts = () => {
       fetchProducts();
     } catch (error) {
       console.error("Failed to save product:", error);
-      showNotification(
-        error.response?.data?.message || "Failed to save product",
-        "error"
-      );
+      toast.error(error.response?.data?.message || "Failed to save product");
     } finally {
       setSubmitLoading(false);
       setUploadingImages(false);
@@ -292,11 +282,11 @@ const VendorProducts = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`${API_URL}/products/${productId}`, config);
-      showNotification("Product deleted successfully");
+      toast.success("Product deleted successfully");
       fetchProducts();
     } catch (error) {
       console.error("Failed to delete product:", error);
-      showNotification("Failed to delete product", "error");
+      toast.error("Failed to delete product");
     } finally {
       setDeleteLoading(null);
     }
@@ -334,24 +324,6 @@ const VendorProducts = () => {
 
   return (
     <div>
-      {/* Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg ${
-            notification.type === "error"
-              ? "bg-red-500 text-white"
-              : "bg-green-500 text-white"
-          }`}
-        >
-          {notification.type === "error" ? (
-            <AlertCircle size={20} />
-          ) : (
-            <CheckCircle size={20} />
-          )}
-          {notification.message}
-        </div>
-      )}
-
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>

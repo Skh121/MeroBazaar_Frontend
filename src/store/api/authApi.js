@@ -41,6 +41,14 @@ export const resetPasswordApi = async (email, otp, newPassword) => {
   return res.data;
 };
 
+export const googleAuthApi = async (credential) => {
+  const res = await axios.post(
+    `${import.meta.env.VITE_API_BASE_URL}/auth/google`,
+    { credential }
+  );
+  return res.data;
+};
+
 // Vendor Auth APIs
 export const vendorLoginApi = async (data) => {
   const res = await axios.post(

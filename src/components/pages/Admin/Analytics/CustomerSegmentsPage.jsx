@@ -15,7 +15,10 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layout/AdminLayout";
 import { useAuthStore } from "../../../../store/lib/authStore";
-import { getCustomerSegments, recalculateSegments } from "../../../../store/api/analyticsApi";
+import {
+  getCustomerSegments,
+  recalculateSegments,
+} from "../../../../store/api/analyticsApi";
 import { DonutChart, BarChart } from "../../../shared/Charts";
 
 const CustomerSegmentsPage = () => {
@@ -148,7 +151,10 @@ const CustomerSegmentsPage = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Customer Segments" subtitle="RFM & K-Means clustering analysis">
+      <AdminLayout
+        title="Customer Segments"
+        subtitle="RFM & K-Means clustering analysis"
+      >
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-merogreen" />
         </div>
@@ -168,7 +174,9 @@ const CustomerSegmentsPage = () => {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Customer Segments</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Customer Segments
+            </h1>
             <p className="text-gray-500">RFM & K-Means clustering analysis</p>
           </div>
         </div>
@@ -177,7 +185,10 @@ const CustomerSegmentsPage = () => {
           disabled={recalculating}
           className="flex items-center gap-2 px-4 py-2 bg-merogreen text-white rounded-lg hover:bg-merogreen-dark transition disabled:opacity-50"
         >
-          <RefreshCw size={16} className={recalculating ? "animate-spin" : ""} />
+          <RefreshCw
+            size={16}
+            className={recalculating ? "animate-spin" : ""}
+          />
           {recalculating ? "Recalculating..." : "Recalculate Segments"}
         </button>
       </div>
@@ -197,7 +208,9 @@ const CustomerSegmentsPage = () => {
             {Object.entries(segments).map(([name, data]) => (
               <div
                 key={name}
-                onClick={() => setSelectedSegment(selectedSegment === name ? null : name)}
+                onClick={() =>
+                  setSelectedSegment(selectedSegment === name ? null : name)
+                }
                 className={`p-4 rounded-xl border cursor-pointer transition ${
                   selectedSegment === name
                     ? "ring-2 ring-merogreen"
@@ -215,12 +228,18 @@ const CustomerSegmentsPage = () => {
                   <p className="text-sm opacity-75">customers</p>
                   {data.avgRfmScore && (
                     <p className="text-sm">
-                      Avg RFM: <span className="font-medium">{data.avgRfmScore.toFixed(1)}</span>
+                      Avg RFM:{" "}
+                      <span className="font-medium">
+                        {data.avgRfmScore.toFixed(1)}
+                      </span>
                     </p>
                   )}
                   {data.avgMonetary && (
                     <p className="text-sm">
-                      Avg Value: <span className="font-medium">Rs. {data.avgMonetary.toFixed(0)}</span>
+                      Avg Value:{" "}
+                      <span className="font-medium">
+                        Rs. {data.avgMonetary.toFixed(0)}
+                      </span>
                     </p>
                   )}
                 </div>
@@ -232,7 +251,9 @@ const CustomerSegmentsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Distribution Chart */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Segment Distribution</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">
+                Segment Distribution
+              </h3>
               <div className="h-64">
                 <DonutChart
                   data={segmentChartData}
@@ -244,12 +265,20 @@ const CustomerSegmentsPage = () => {
 
             {/* RFM Scores Chart */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Average RFM Scores by Segment</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">
+                Average RFM Scores by Segment
+              </h3>
               <div className="h-64">
                 <BarChart
                   data={rfmChartData}
                   xKey="name"
-                  bars={[{ dataKey: "avgRfm", color: "#10B981", name: "Avg RFM Score" }]}
+                  bars={[
+                    {
+                      dataKey: "avgRfm",
+                      color: "#10B981",
+                      name: "Avg RFM Score",
+                    },
+                  ]}
                 />
               </div>
             </div>
@@ -291,10 +320,15 @@ const CustomerSegmentsPage = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {customers
-                      .filter((c) => !selectedSegment || c.segment === selectedSegment)
+                      .filter(
+                        (c) => !selectedSegment || c.segment === selectedSegment
+                      )
                       .slice(0, 20)
                       .map((customer, index) => (
-                        <tr key={customer._id || index} className="hover:bg-gray-50">
+                        <tr
+                          key={customer._id || index}
+                          className="hover:bg-gray-50"
+                        >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -302,7 +336,9 @@ const CustomerSegmentsPage = () => {
                               </div>
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {customer.user?.fullName || customer.fullName || "Unknown"}
+                                  {customer.user?.fullName ||
+                                    customer.fullName ||
+                                    "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
                                   {customer.user?.email || customer.email || ""}
@@ -316,23 +352,33 @@ const CustomerSegmentsPage = () => {
                                 customer.segment
                               )}`}
                             >
-                              {customer.segment?.replace(/_/g, " ") || "Unknown"}
+                              {customer.segment?.replace(/_/g, " ") ||
+                                "Unknown"}
                             </span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <Star size={14} className="text-yellow-500" />
-                              <span className="font-medium">{customer.rfmScore?.toFixed(1) || "N/A"}</span>
+                              <span className="font-medium">
+                                {customer.rfmScore?.toFixed(1) || "N/A"}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {customer.recencyScore?.toFixed(0) || customer.recency || "N/A"}
+                            {customer.recencyScore?.toFixed(0) ||
+                              customer.recency ||
+                              "N/A"}
                           </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {customer.frequencyScore?.toFixed(0) || customer.frequency || "N/A"}
+                            {customer.frequencyScore?.toFixed(0) ||
+                              customer.frequency ||
+                              "N/A"}
                           </td>
                           <td className="px-6 py-4 text-gray-600">
-                            Rs. {customer.monetaryValue?.toLocaleString() || customer.monetary?.toLocaleString() || "0"}
+                            Rs.{" "}
+                            {customer.monetaryValue?.toLocaleString() ||
+                              customer.monetary?.toLocaleString() ||
+                              "0"}
                           </td>
                         </tr>
                       ))}
@@ -345,10 +391,13 @@ const CustomerSegmentsPage = () => {
       ) : (
         <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
           <Users size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Segment Data Available</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Segment Data Available
+          </h3>
           <p className="text-gray-500 mb-6">
-            Customer segments will appear here once calculated. Click "Recalculate Segments" to generate
-            segments based on customer behavior.
+            Customer segments will appear here once calculated. Click
+            "Recalculate Segments" to generate segments based on customer
+            behavior.
           </p>
           <button
             onClick={handleRecalculate}
@@ -367,10 +416,14 @@ const CustomerSegmentsPage = () => {
             <Users size={24} className="text-purple-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-purple-900 mb-2">About Customer Segmentation</h3>
+            <h3 className="font-semibold text-purple-900 mb-2">
+              About Customer Segmentation
+            </h3>
             <p className="text-purple-700 text-sm mb-3">
-              Customer segments are calculated using RFM (Recency, Frequency, Monetary) analysis combined
-              with K-Means clustering. This helps identify your most valuable customers and those at risk of churning.
+              Customer segments are calculated using RFM (Recency, Frequency,
+              Monetary) analysis combined with K-Means clustering. This helps
+              identify your most valuable customers and those at risk of
+              churning.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>

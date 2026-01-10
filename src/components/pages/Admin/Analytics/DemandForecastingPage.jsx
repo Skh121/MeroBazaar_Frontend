@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layout/AdminLayout";
 import { useAuthStore } from "../../../../store/lib/authStore";
-import { getDemandForecasts, generateForecast } from "../../../../store/api/analyticsApi";
+import {
+  getDemandForecasts,
+  generateForecast,
+} from "../../../../store/api/analyticsApi";
 import { LineChart } from "../../../shared/Charts";
 
 const DemandForecastingPage = () => {
@@ -73,7 +76,10 @@ const DemandForecastingPage = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Demand Forecasting" subtitle="Prophet-based demand predictions">
+      <AdminLayout
+        title="Demand Forecasting"
+        subtitle="Prophet-based demand predictions"
+      >
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-merogreen" />
         </div>
@@ -93,7 +99,9 @@ const DemandForecastingPage = () => {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Demand Forecasting</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Demand Forecasting
+            </h1>
             <p className="text-gray-500">Prophet-based demand predictions</p>
           </div>
         </div>
@@ -118,9 +126,12 @@ const DemandForecastingPage = () => {
       {forecasts.length === 0 ? (
         <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
           <TrendingUp size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Forecasts Available</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Forecasts Available
+          </h3>
           <p className="text-gray-500 mb-6">
-            Demand forecasts will appear here once generated from product sales data.
+            Demand forecasts will appear here once generated from product sales
+            data.
           </p>
         </div>
       ) : (
@@ -137,7 +148,8 @@ const DemandForecastingPage = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">
-                      {forecast.product?.name || `Product ${forecast.productId}`}
+                      {forecast.product?.name ||
+                        `Product ${forecast.productId}`}
                     </h3>
                     <p className="text-sm text-gray-500">
                       <Calendar size={12} className="inline mr-1" />
@@ -166,9 +178,23 @@ const DemandForecastingPage = () => {
                     }))}
                     xKey="date"
                     lines={[
-                      { dataKey: "predicted", color: "#10B981", name: "Predicted" },
-                      { dataKey: "lower", color: "#94A3B8", name: "Lower Bound", strokeDasharray: "5 5" },
-                      { dataKey: "upper", color: "#94A3B8", name: "Upper Bound", strokeDasharray: "5 5" },
+                      {
+                        dataKey: "predicted",
+                        color: "#10B981",
+                        name: "Predicted",
+                      },
+                      {
+                        dataKey: "lower",
+                        color: "#94A3B8",
+                        name: "Lower Bound",
+                        strokeDasharray: "5 5",
+                      },
+                      {
+                        dataKey: "upper",
+                        color: "#94A3B8",
+                        name: "Upper Bound",
+                        strokeDasharray: "5 5",
+                      },
                     ]}
                   />
                 </div>
@@ -194,7 +220,10 @@ const DemandForecastingPage = () => {
                     {forecast.trend === "up" ? (
                       <TrendingUp size={14} className="text-green-500" />
                     ) : (
-                      <TrendingUp size={14} className="text-red-500 rotate-180" />
+                      <TrendingUp
+                        size={14}
+                        className="text-red-500 rotate-180"
+                      />
                     )}
                     {forecast.trend || "Stable"}
                   </p>
@@ -212,11 +241,14 @@ const DemandForecastingPage = () => {
             <TrendingUp size={24} className="text-blue-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-blue-900 mb-2">About Demand Forecasting</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">
+              About Demand Forecasting
+            </h3>
             <p className="text-blue-700 text-sm">
-              Our demand forecasting uses Prophet, a time-series forecasting model developed by Meta.
-              It analyzes historical sales patterns, seasonality, and trends to predict future demand.
-              Use these insights to optimize inventory levels and prevent stockouts.
+              Our demand forecasting uses Prophet, a time-series forecasting
+              model developed by Meta. It analyzes historical sales patterns,
+              seasonality, and trends to predict future demand. Use these
+              insights to optimize inventory levels and prevent stockouts.
             </p>
           </div>
         </div>
