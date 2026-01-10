@@ -11,7 +11,8 @@ export const BarChart = ({
   className = "",
 }) => {
   const { bars, maxValue, xLabels } = useMemo(() => {
-    if (!data || data.length === 0) return { bars: [], maxValue: 0, xLabels: [] };
+    if (!data || data.length === 0)
+      return { bars: [], maxValue: 0, xLabels: [] };
 
     const maxVal = Math.max(...data.map((d) => d[yKey] || 0));
     const barWidth = (width - 60) / data.length - 10;
@@ -28,7 +29,10 @@ export const BarChart = ({
 
   if (!data || data.length === 0) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ width, height }}
+      >
         <p className="text-gray-400">No data available</p>
       </div>
     );
@@ -39,10 +43,24 @@ export const BarChart = ({
   return (
     <svg width={width} height={height} className={className}>
       {/* Y-axis */}
-      <line x1="45" y1="10" x2="45" y2={height - 40} stroke="#e5e7eb" strokeWidth="1" />
+      <line
+        x1="45"
+        y1="10"
+        x2="45"
+        y2={height - 40}
+        stroke="#e5e7eb"
+        strokeWidth="1"
+      />
 
       {/* X-axis */}
-      <line x1="45" y1={height - 40} x2={width - 10} y2={height - 40} stroke="#e5e7eb" strokeWidth="1" />
+      <line
+        x1="45"
+        y1={height - 40}
+        x2={width - 10}
+        y2={height - 40}
+        stroke="#e5e7eb"
+        strokeWidth="1"
+      />
 
       {/* Bars */}
       {bars.map((bar, i) => (
@@ -102,26 +120,35 @@ export const LineChart = ({
   className = "",
 }) => {
   const { points, path, maxValue } = useMemo(() => {
-    if (!data || data.length === 0) return { points: [], path: "", maxValue: 0 };
+    if (!data || data.length === 0)
+      return { points: [], path: "", maxValue: 0 };
 
     const maxVal = Math.max(...data.map((d) => d[yKey] || 0));
     const xStep = (width - 70) / (data.length - 1 || 1);
 
     const pts = data.map((d, i) => ({
       x: 50 + i * xStep,
-      y: maxVal > 0 ? height - 40 - ((d[yKey] || 0) / maxVal) * (height - 60) : height - 40,
+      y:
+        maxVal > 0
+          ? height - 40 - ((d[yKey] || 0) / maxVal) * (height - 60)
+          : height - 40,
       value: d[yKey] || 0,
       label: d[xKey],
     }));
 
-    const pathD = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const pathD = pts
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
 
     return { points: pts, path: pathD, maxValue: maxVal };
   }, [data, xKey, yKey, width, height]);
 
   if (!data || data.length === 0) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ width, height }}
+      >
         <p className="text-gray-400">No data available</p>
       </div>
     );
@@ -143,17 +170,39 @@ export const LineChart = ({
       ))}
 
       {/* Y-axis */}
-      <line x1="45" y1="10" x2="45" y2={height - 40} stroke="#e5e7eb" strokeWidth="1" />
+      <line
+        x1="45"
+        y1="10"
+        x2="45"
+        y2={height - 40}
+        stroke="#e5e7eb"
+        strokeWidth="1"
+      />
 
       {/* X-axis */}
-      <line x1="45" y1={height - 40} x2={width - 10} y2={height - 40} stroke="#e5e7eb" strokeWidth="1" />
+      <line
+        x1="45"
+        y1={height - 40}
+        x2={width - 10}
+        y2={height - 40}
+        stroke="#e5e7eb"
+        strokeWidth="1"
+      />
 
       {/* Line */}
-      <path d={path} fill="none" stroke={color} strokeWidth="2" className="transition-all duration-300" />
+      <path
+        d={path}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        className="transition-all duration-300"
+      />
 
       {/* Area fill */}
       <path
-        d={`${path} L ${points[points.length - 1]?.x || 0} ${height - 40} L 50 ${height - 40} Z`}
+        d={`${path} L ${points[points.length - 1]?.x || 0} ${
+          height - 40
+        } L 50 ${height - 40} Z`}
         fill={color}
         fillOpacity="0.1"
       />
@@ -161,9 +210,21 @@ export const LineChart = ({
       {/* Points */}
       {points.map((point, i) => (
         <g key={i}>
-          <circle cx={point.x} cy={point.y} r="4" fill={color} className="transition-all duration-300" />
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r="4"
+            fill={color}
+            className="transition-all duration-300"
+          />
           {i % Math.ceil(points.length / 6) === 0 && (
-            <text x={point.x} y={height - 25} textAnchor="middle" fontSize="9" fill="#9ca3af">
+            <text
+              x={point.x}
+              y={height - 25}
+              textAnchor="middle"
+              fontSize="9"
+              fill="#9ca3af"
+            >
               {String(point.label).slice(5, 10)}
             </text>
           )}
@@ -188,7 +249,16 @@ export const PieChart = ({
   valueKey,
   width = 250,
   height = 250,
-  colors = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"],
+  colors = [
+    "#10b981",
+    "#3b82f6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#14b8a6",
+    "#f97316",
+  ],
   className = "",
 }) => {
   const { slices, total } = useMemo(() => {
@@ -236,7 +306,10 @@ export const PieChart = ({
 
   if (!data || data.length === 0) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ width, height }}
+      >
         <p className="text-gray-400">No data available</p>
       </div>
     );
@@ -257,7 +330,10 @@ export const PieChart = ({
       <div className="flex flex-wrap justify-center gap-2 mt-2">
         {slices.map((slice, i) => (
           <div key={i} className="flex items-center gap-1 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: slice.color }} />
+            <div
+              className="w-3 h-3 rounded"
+              style={{ backgroundColor: slice.color }}
+            />
             <span className="text-gray-600">
               {slice.name}: {slice.percentage}%
             </span>
@@ -335,7 +411,10 @@ export const DonutChart = ({
 
   if (!data || data.length === 0) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ width, height }}
+      >
         <p className="text-gray-400">No data available</p>
       </div>
     );
@@ -344,12 +423,31 @@ export const DonutChart = ({
   return (
     <svg width={width} height={height} className={className}>
       {slices.map((slice, i) => (
-        <path key={i} d={slice.path} fill={slice.color} className="transition-all duration-300 hover:opacity-80" />
+        <path
+          key={i}
+          d={slice.path}
+          fill={slice.color}
+          className="transition-all duration-300 hover:opacity-80"
+        />
       ))}
-      <text x={width / 2} y={height / 2} textAnchor="middle" dy="0.35em" fontSize="16" fontWeight="bold" fill="#374151">
+      <text
+        x={width / 2}
+        y={height / 2}
+        textAnchor="middle"
+        dy="0.35em"
+        fontSize="16"
+        fontWeight="bold"
+        fill="#374151"
+      >
         {total}
       </text>
-      <text x={width / 2} y={height / 2 + 18} textAnchor="middle" fontSize="10" fill="#9ca3af">
+      <text
+        x={width / 2}
+        y={height / 2 + 18}
+        textAnchor="middle"
+        fontSize="10"
+        fill="#9ca3af"
+      >
         Total
       </text>
     </svg>
@@ -366,7 +464,10 @@ export const FunnelChart = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ width, height }}
+      >
         <p className="text-gray-400">No data available</p>
       </div>
     );
@@ -394,10 +495,23 @@ export const FunnelChart = ({
               rx="4"
               className="transition-all duration-300"
             />
-            <text x="5" y={y + stepHeight / 2} fontSize="10" fill="#6b7280" dy="0.35em">
+            <text
+              x="5"
+              y={y + stepHeight / 2}
+              fontSize="10"
+              fill="#6b7280"
+              dy="0.35em"
+            >
               {item.name}
             </text>
-            <text x={width - 10} y={y + stepHeight / 2} fontSize="10" fill="#374151" dy="0.35em" textAnchor="end">
+            <text
+              x={width - 10}
+              y={y + stepHeight / 2}
+              fontSize="10"
+              fill="#374151"
+              dy="0.35em"
+              textAnchor="end"
+            >
               {item.value}
             </text>
           </g>

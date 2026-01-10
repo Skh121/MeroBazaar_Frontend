@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useSignup } from "../../../hooks/useAuth";
+import GoogleLoginButton from "../../shared/GoogleLoginButton";
 import SignupLogo from "../../../assets/images/SignupLogo.svg";
 import SignupImage from "../../../assets/images/signup.png";
 
@@ -266,6 +267,16 @@ const SignupPage = () => {
             >
               {isPending ? "Processing..." : "Create Account"}
             </button>
+
+            {/* Divider */}
+            <div className="flex items-center my-4">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="px-4 text-sm text-gray-500">or</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+
+            {/* Google Signup */}
+            <GoogleLoginButton />
           </form>
         </div>
       </div>
