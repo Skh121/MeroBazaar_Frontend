@@ -32,7 +32,11 @@ export const trackBatchEvents = async (events) => {
 
 // ============ RECOMMENDATIONS ============
 
-export const getRecommendations = async (token, limit = 10, type = "hybrid") => {
+export const getRecommendations = async (
+  token,
+  limit = 10,
+  type = "hybrid"
+) => {
   const response = await axios.get(`${API_URL}/analytics/recommendations`, {
     headers: { Authorization: `Bearer ${token}` },
     params: { limit, type },
@@ -153,6 +157,36 @@ export const calculateVendorDynamicPrice = async (token, productId) => {
     `${API_URL}/analytics/vendor/pricing/calculate`,
     { productId },
     { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+// ============ VENDOR CUSTOMER SEGMENTS ============
+
+export const getVendorCustomerSegments = async (token) => {
+  const response = await axios.get(`${API_URL}/analytics/vendor/segments`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// ============ VENDOR DEMAND FORECASTING ============
+
+export const getVendorDemandForecasts = async (token) => {
+  const response = await axios.get(`${API_URL}/analytics/vendor/forecasts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// ============ VENDOR PRICING SUGGESTIONS ============
+
+export const getVendorPricingSuggestions = async (token) => {
+  const response = await axios.get(
+    `${API_URL}/analytics/vendor/pricing-suggestions`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
   );
   return response.data;
 };

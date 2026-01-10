@@ -150,7 +150,9 @@ const ShopPage = () => {
       params.append("page", page);
       params.append("limit", PRODUCTS_PER_PAGE * 3); // Fetch more to filter client-side
 
-      const response = await axios.get(`${API_URL}/products?${params.toString()}`);
+      const response = await axios.get(
+        `${API_URL}/products?${params.toString()}`
+      );
 
       let fetchedProducts = [];
       if (response.data.products) {
@@ -171,7 +173,9 @@ const ShopPage = () => {
 
       setProducts(paginatedProducts);
       setTotalProducts(filteredProducts.length);
-      setTotalPages(Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE) || 1);
+      setTotalPages(
+        Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE) || 1
+      );
     } catch (error) {
       console.error("Failed to fetch products:", error);
       setProducts([]);
@@ -266,11 +270,15 @@ const ShopPage = () => {
         params.append("page", 1);
         params.append("limit", PRODUCTS_PER_PAGE);
 
-        const response = await axios.get(`${API_URL}/products?${params.toString()}`);
+        const response = await axios.get(
+          `${API_URL}/products?${params.toString()}`
+        );
 
         if (response.data.products) {
           setProducts(response.data.products);
-          setTotalProducts(response.data.total || response.data.products.length);
+          setTotalProducts(
+            response.data.total || response.data.products.length
+          );
           setTotalPages(
             response.data.totalPages ||
               Math.ceil(
@@ -372,7 +380,9 @@ const ShopPage = () => {
 
                 {/* Price Range */}
                 <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Price Range</h3>
+                  <h3 className="font-medium text-gray-900 mb-3">
+                    Price Range
+                  </h3>
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm text-gray-500">Min:</label>

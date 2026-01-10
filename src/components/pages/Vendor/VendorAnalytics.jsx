@@ -14,7 +14,11 @@ import {
 import Navbar from "../../layout/Navbar";
 import Footer from "../../layout/Footer";
 import { useAuthStore } from "../../../store/lib/authStore";
-import { getVendorAnalytics, getVendorDynamicPrices, calculateVendorDynamicPrice } from "../../../store/api/analyticsApi";
+import {
+  getVendorAnalytics,
+  getVendorDynamicPrices,
+  calculateVendorDynamicPrice,
+} from "../../../store/api/analyticsApi";
 import { LineChart, BarChart } from "../../shared/Charts";
 
 const VendorAnalytics = () => {
@@ -61,7 +65,9 @@ const VendorAnalytics = () => {
       setCalculatingPrice(productId);
       await calculateVendorDynamicPrice(token, productId);
       // Refresh prices
-      const pricesData = await getVendorDynamicPrices(token, { isActive: true });
+      const pricesData = await getVendorDynamicPrices(token, {
+        isActive: true,
+      });
       setPrices(pricesData.prices || []);
     } catch (err) {
       console.error("Failed to calculate price:", err);
@@ -71,12 +77,13 @@ const VendorAnalytics = () => {
   };
 
   // Process data for charts
-  const dailyTrends = analytics?.dailyTrends?.map((d) => ({
-    date: d._id?.date,
-    views: d.views || 0,
-    cartAdds: d.cartAdds || 0,
-    purchases: d.purchases || 0,
-  })) || [];
+  const dailyTrends =
+    analytics?.dailyTrends?.map((d) => ({
+      date: d._id?.date,
+      views: d.views || 0,
+      cartAdds: d.cartAdds || 0,
+      purchases: d.purchases || 0,
+    })) || [];
 
   // Aggregate product stats
   const productStats = {};
@@ -85,14 +92,26 @@ const VendorAnalytics = () => {
     if (!productStats[productId]) {
       productStats[productId] = { views: 0, cartAdds: 0, purchases: 0 };
     }
-    if (stat._id?.eventType === "view") productStats[productId].views = stat.count;
-    if (stat._id?.eventType === "add_to_cart") productStats[productId].cartAdds = stat.count;
-    if (stat._id?.eventType === "purchase") productStats[productId].purchases = stat.count;
+    if (stat._id?.eventType === "view")
+      productStats[productId].views = stat.count;
+    if (stat._id?.eventType === "add_to_cart")
+      productStats[productId].cartAdds = stat.count;
+    if (stat._id?.eventType === "purchase")
+      productStats[productId].purchases = stat.count;
   });
 
-  const totalViews = Object.values(productStats).reduce((sum, p) => sum + p.views, 0);
-  const totalCartAdds = Object.values(productStats).reduce((sum, p) => sum + p.cartAdds, 0);
-  const totalPurchases = Object.values(productStats).reduce((sum, p) => sum + p.purchases, 0);
+  const totalViews = Object.values(productStats).reduce(
+    (sum, p) => sum + p.views,
+    0
+  );
+  const totalCartAdds = Object.values(productStats).reduce(
+    (sum, p) => sum + p.cartAdds,
+    0
+  );
+  const totalPurchases = Object.values(productStats).reduce(
+    (sum, p) => sum + p.purchases,
+    0
+  );
 
   if (loading) {
     return (
@@ -115,8 +134,12 @@ const VendorAnalytics = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Vendor Analytics</h1>
-              <p className="text-gray-500 mt-1">Track your product performance and optimize pricing</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Vendor Analytics
+              </h1>
+              <p className="text-gray-500 mt-1">
+                Track your product performance and optimize pricing
+              </p>
             </div>
             <button
               onClick={fetchData}
@@ -154,7 +177,9 @@ const VendorAnalytics = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Product Views</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalViews.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {totalViews.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
                   <Eye size={24} className="text-green-500" />
@@ -166,7 +191,9 @@ const VendorAnalytics = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Cart Additions</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalCartAdds.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {totalCartAdds.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-3 bg-yellow-50 rounded-lg">
                   <ShoppingCart size={24} className="text-yellow-500" />
@@ -178,7 +205,9 @@ const VendorAnalytics = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Purchases</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalPurchases.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {totalPurchases.toLocaleString()}
+                  </p>
                 </div>
                 <div className="p-3 bg-purple-50 rounded-lg">
                   <DollarSign size={24} className="text-purple-500" />
@@ -192,7 +221,9 @@ const VendorAnalytics = () => {
             {/* Daily Trends */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Daily Performance (Last 30 Days)</h3>
+                <h3 className="font-semibold text-gray-900">
+                  Daily Performance (Last 30 Days)
+                </h3>
                 <Calendar size={20} className="text-gray-400" />
               </div>
               <LineChart
@@ -208,7 +239,9 @@ const VendorAnalytics = () => {
             {/* Conversion Stats */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Conversion Overview</h3>
+                <h3 className="font-semibold text-gray-900">
+                  Conversion Overview
+                </h3>
                 <TrendingUp size={20} className="text-gray-400" />
               </div>
               <BarChart
@@ -227,13 +260,19 @@ const VendorAnalytics = () => {
                 <div className="text-center">
                   <p className="text-gray-500">View → Cart Rate</p>
                   <p className="font-semibold text-lg text-merogreen">
-                    {totalViews > 0 ? ((totalCartAdds / totalViews) * 100).toFixed(1) : 0}%
+                    {totalViews > 0
+                      ? ((totalCartAdds / totalViews) * 100).toFixed(1)
+                      : 0}
+                    %
                   </p>
                 </div>
                 <div className="text-center">
                   <p className="text-gray-500">Cart → Purchase Rate</p>
                   <p className="font-semibold text-lg text-merogreen">
-                    {totalCartAdds > 0 ? ((totalPurchases / totalCartAdds) * 100).toFixed(1) : 0}%
+                    {totalCartAdds > 0
+                      ? ((totalPurchases / totalCartAdds) * 100).toFixed(1)
+                      : 0}
+                    %
                   </p>
                 </div>
               </div>
@@ -243,7 +282,9 @@ const VendorAnalytics = () => {
           {/* Dynamic Pricing Recommendations */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Dynamic Pricing Recommendations</h3>
+              <h3 className="font-semibold text-gray-900">
+                Dynamic Pricing Recommendations
+              </h3>
               <DollarSign size={20} className="text-gray-400" />
             </div>
 
@@ -252,24 +293,41 @@ const VendorAnalytics = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Product</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Current Price</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Recommended</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Change</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Reason</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Action</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+                        Product
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
+                        Current Price
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
+                        Recommended
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
+                        Change
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
+                        Reason
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {prices.map((price) => (
-                      <tr key={price._id} className="border-b border-gray-50 hover:bg-gray-50">
+                      <tr
+                        key={price._id}
+                        className="border-b border-gray-50 hover:bg-gray-50"
+                      >
                         <td className="py-3 px-4">
                           <span className="font-medium text-gray-900">
                             {price.product?.name || "Unknown"}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <span className="text-gray-600">Rs. {price.basePrice}</span>
+                          <span className="text-gray-600">
+                            Rs. {price.basePrice}
+                          </span>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className="font-medium text-merogreen">
@@ -297,7 +355,9 @@ const VendorAnalytics = () => {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <button
-                            onClick={() => handleCalculatePrice(price.product?._id)}
+                            onClick={() =>
+                              handleCalculatePrice(price.product?._id)
+                            }
                             disabled={calculatingPrice === price.product?._id}
                             className="text-sm text-merogreen hover:text-green-700"
                           >
@@ -317,7 +377,10 @@ const VendorAnalytics = () => {
               <div className="text-center py-8 text-gray-500">
                 <DollarSign size={48} className="mx-auto mb-4 text-gray-300" />
                 <p>No pricing recommendations yet.</p>
-                <p className="text-sm">Recommendations will appear as your products gain more traction.</p>
+                <p className="text-sm">
+                  Recommendations will appear as your products gain more
+                  traction.
+                </p>
               </div>
             )}
           </div>
