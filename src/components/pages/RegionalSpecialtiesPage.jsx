@@ -281,7 +281,7 @@ const RegionalSpecialtiesPage = () => {
         className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border border-gray-100"
       >
         {/* Image Container */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+        <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
           {product.images?.[0]?.url ? (
             <img
               src={getImageUrl(product.images[0].url)}
@@ -432,7 +432,7 @@ const RegionalSpecialtiesPage = () => {
 
           {/* Regional Insights */}
           {(insights.mostPopular || insights.trending || insights.highDemand) && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4 mb-6">
+            <div className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4 mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={18} className="text-merogreen" />
                 <span className="font-medium text-gray-800">Regional Insights</span>
