@@ -94,9 +94,12 @@ const AdminCustomersContent = ({ token }) => {
   const handleViewCustomer = async (customer) => {
     try {
       setActionLoading(true);
-      const response = await axios.get(`${API_URL}/admin/customers/${customer._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${API_URL}/admin/customers/${customer._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setSelectedCustomer(response.data);
       setViewModalOpen(true);
     } catch (error) {
@@ -187,7 +190,8 @@ const AdminCustomersContent = ({ token }) => {
     return (
       <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
         <div className="text-sm text-gray-500">
-          Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, totalCustomers)} of{" "}
+          Showing {startIndex + 1} to{" "}
+          {Math.min(startIndex + ITEMS_PER_PAGE, totalCustomers)} of{" "}
           {totalCustomers} customers
         </div>
         <div className="flex items-center gap-2">
@@ -199,7 +203,12 @@ const AdminCustomersContent = ({ token }) => {
             <ChevronLeft size={16} />
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+            .filter(
+              (page) =>
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+            )
             .map((page, index, array) => (
               <span key={page}>
                 {index > 0 && array[index - 1] !== page - 1 && (
@@ -218,7 +227,9 @@ const AdminCustomersContent = ({ token }) => {
               </span>
             ))}
           <button
-            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage(Math.min(currentPage + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
             className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -234,7 +245,9 @@ const AdminCustomersContent = ({ token }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Customer Management</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Customer Management
+          </h1>
           <p className="text-gray-500">View and manage platform customers</p>
         </div>
         <button
@@ -270,7 +283,9 @@ const AdminCustomersContent = ({ token }) => {
             <DollarSign size={20} className="text-purple-600" />
           </div>
           <p className="text-2xl font-bold text-gray-800">
-            {formatCurrency(customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0))}
+            {formatCurrency(
+              customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0)
+            )}
           </p>
           <p className="text-sm text-gray-500">Total Spent (This Page)</p>
         </div>
@@ -294,7 +309,10 @@ const AdminCustomersContent = ({ token }) => {
 
         {loading ? (
           <div className="p-8 text-center">
-            <Loader2 size={32} className="mx-auto mb-2 text-merogreen animate-spin" />
+            <Loader2
+              size={32}
+              className="mx-auto mb-2 text-merogreen animate-spin"
+            />
             <p className="text-gray-500">Loading customers...</p>
           </div>
         ) : customers.length === 0 ? (
@@ -338,12 +356,17 @@ const AdminCustomersContent = ({ token }) => {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                             <span className="text-gray-600 font-medium">
-                              {customer.fullName?.charAt(0)?.toUpperCase() || "?"}
+                              {customer.fullName?.charAt(0)?.toUpperCase() ||
+                                "?"}
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-gray-800">{customer.fullName || "N/A"}</p>
-                            <p className="text-xs text-gray-500">ID: {customer._id?.slice(-8)}</p>
+                            <p className="font-medium text-gray-800">
+                              {customer.fullName || "N/A"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ID: {customer._id?.slice(-8)}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -451,7 +474,9 @@ const AdminCustomersContent = ({ token }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-800">Customer Details</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Customer Details
+              </h3>
               <button
                 onClick={() => {
                   setViewModalOpen(false);
@@ -471,7 +496,9 @@ const AdminCustomersContent = ({ token }) => {
                   </span>
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xl font-semibold text-gray-800">{selectedCustomer.fullName}</h4>
+                  <h4 className="text-xl font-semibold text-gray-800">
+                    {selectedCustomer.fullName}
+                  </h4>
                   <p className="text-gray-500">{selectedCustomer.email}</p>
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium mt-2 ${
@@ -502,102 +529,133 @@ const AdminCustomersContent = ({ token }) => {
                     <Phone size={16} />
                     <span className="text-sm">Phone</span>
                   </div>
-                  <p className="font-medium text-gray-800">{selectedCustomer.phone || "Not provided"}</p>
+                  <p className="font-medium text-gray-800">
+                    {selectedCustomer.phone || "Not provided"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-gray-500 mb-1">
                     <Calendar size={16} />
                     <span className="text-sm">Member Since</span>
                   </div>
-                  <p className="font-medium text-gray-800">{formatDate(selectedCustomer.createdAt)}</p>
+                  <p className="font-medium text-gray-800">
+                    {formatDate(selectedCustomer.createdAt)}
+                  </p>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-blue-600 mb-1">
                     <ShoppingCart size={16} />
                     <span className="text-sm">Total Orders</span>
                   </div>
-                  <p className="text-xl font-bold text-blue-700">{selectedCustomer.totalOrders || 0}</p>
+                  <p className="text-xl font-bold text-blue-700">
+                    {selectedCustomer.totalOrders || 0}
+                  </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-green-600 mb-1">
                     <DollarSign size={16} />
                     <span className="text-sm">Total Spent</span>
                   </div>
-                  <p className="text-xl font-bold text-green-700">{formatCurrency(selectedCustomer.totalSpent)}</p>
+                  <p className="text-xl font-bold text-green-700">
+                    {formatCurrency(selectedCustomer.totalSpent)}
+                  </p>
                 </div>
               </div>
 
               {/* Addresses */}
-              {selectedCustomer.addresses && selectedCustomer.addresses.length > 0 && (
-                <div>
-                  <h5 className="font-semibold text-gray-800 mb-3">Addresses</h5>
-                  <div className="space-y-2">
-                    {selectedCustomer.addresses.map((address, index) => (
-                      <div key={index} className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-                        <MapPin size={16} className="text-gray-400 mt-0.5" />
-                        <div>
-                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                            {address.label}
-                          </span>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {[address.street, address.city, address.district, address.province]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </p>
+              {selectedCustomer.addresses &&
+                selectedCustomer.addresses.length > 0 && (
+                  <div>
+                    <h5 className="font-semibold text-gray-800 mb-3">
+                      Addresses
+                    </h5>
+                    <div className="space-y-2">
+                      {selectedCustomer.addresses.map((address, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg"
+                        >
+                          <MapPin size={16} className="text-gray-400 mt-0.5" />
+                          <div>
+                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                              {address.label}
+                            </span>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {[
+                                address.street,
+                                address.city,
+                                address.district,
+                                address.province,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Recent Orders */}
-              {selectedCustomer.recentOrders && selectedCustomer.recentOrders.length > 0 && (
-                <div>
-                  <h5 className="font-semibold text-gray-800 mb-3">Recent Orders</h5>
-                  <div className="space-y-2">
-                    {selectedCustomer.recentOrders.map((order) => (
-                      <div
-                        key={order._id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">Order #{order._id?.slice(-8)}</p>
-                          <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+              {selectedCustomer.recentOrders &&
+                selectedCustomer.recentOrders.length > 0 && (
+                  <div>
+                    <h5 className="font-semibold text-gray-800 mb-3">
+                      Recent Orders
+                    </h5>
+                    <div className="space-y-2">
+                      {selectedCustomer.recentOrders.map((order) => (
+                        <div
+                          key={order._id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              Order #{order._id?.slice(-8)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {formatDate(order.createdAt)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium text-gray-800">
+                              {formatCurrency(order.total)}
+                            </p>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                order.orderStatus === "delivered"
+                                  ? "bg-green-100 text-green-700"
+                                  : order.orderStatus === "cancelled"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {order.orderStatus}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-gray-800">{formatCurrency(order.total)}</p>
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${
-                              order.orderStatus === "delivered"
-                                ? "bg-green-100 text-green-700"
-                                : order.orderStatus === "cancelled"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-blue-100 text-blue-700"
-                            }`}
-                          >
-                            {order.orderStatus}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Suspend Reason if suspended */}
-              {selectedCustomer.status === "suspended" && selectedCustomer.suspendReason && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-red-700 mb-1">
-                    <AlertTriangle size={16} />
-                    <span className="font-medium">Suspension Reason</span>
+              {selectedCustomer.status === "suspended" &&
+                selectedCustomer.suspendReason && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-red-700 mb-1">
+                      <AlertTriangle size={16} />
+                      <span className="font-medium">Suspension Reason</span>
+                    </div>
+                    <p className="text-sm text-red-600">
+                      {selectedCustomer.suspendReason}
+                    </p>
+                    <p className="text-xs text-red-500 mt-1">
+                      Suspended on: {formatDate(selectedCustomer.suspendedAt)}
+                    </p>
                   </div>
-                  <p className="text-sm text-red-600">{selectedCustomer.suspendReason}</p>
-                  <p className="text-xs text-red-500 mt-1">
-                    Suspended on: {formatDate(selectedCustomer.suspendedAt)}
-                  </p>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>
@@ -608,7 +666,9 @@ const AdminCustomersContent = ({ token }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md m-4">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-800">Suspend Customer</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Suspend Customer
+              </h3>
               <button
                 onClick={() => {
                   setSuspendModalOpen(false);
@@ -624,8 +684,12 @@ const AdminCustomersContent = ({ token }) => {
               <div className="flex items-center gap-3 mb-4 p-3 bg-orange-50 rounded-lg">
                 <AlertTriangle className="text-orange-500" size={24} />
                 <div>
-                  <p className="font-medium text-gray-800">{selectedCustomer.fullName}</p>
-                  <p className="text-sm text-gray-500">{selectedCustomer.email}</p>
+                  <p className="font-medium text-gray-800">
+                    {selectedCustomer.fullName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {selectedCustomer.email}
+                  </p>
                 </div>
               </div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -654,7 +718,11 @@ const AdminCustomersContent = ({ token }) => {
                   disabled={actionLoading}
                   className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Ban size={18} />}
+                  {actionLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Ban size={18} />
+                  )}
                   Suspend
                 </button>
               </div>
@@ -668,7 +736,9 @@ const AdminCustomersContent = ({ token }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md m-4">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-800">Delete Customer</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Delete Customer
+              </h3>
               <button
                 onClick={() => {
                   setDeleteModalOpen(false);
@@ -683,13 +753,17 @@ const AdminCustomersContent = ({ token }) => {
               <div className="flex items-center gap-3 mb-4 p-3 bg-red-50 rounded-lg">
                 <AlertTriangle className="text-red-500" size={24} />
                 <div>
-                  <p className="font-medium text-gray-800">{selectedCustomer.fullName}</p>
-                  <p className="text-sm text-gray-500">{selectedCustomer.email}</p>
+                  <p className="font-medium text-gray-800">
+                    {selectedCustomer.fullName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {selectedCustomer.email}
+                  </p>
                 </div>
               </div>
               <p className="text-gray-600 mb-4">
-                Are you sure you want to delete this customer? This action cannot be undone and will
-                permanently remove all customer data.
+                Are you sure you want to delete this customer? This action
+                cannot be undone and will permanently remove all customer data.
               </p>
               <div className="flex gap-3">
                 <button
@@ -706,7 +780,11 @@ const AdminCustomersContent = ({ token }) => {
                   disabled={actionLoading}
                   className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                  {actionLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={18} />
+                  )}
                   Delete
                 </button>
               </div>

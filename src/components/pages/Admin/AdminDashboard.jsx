@@ -8,8 +8,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Bell,
-  Search,
   Menu,
   X,
   ChevronDown,

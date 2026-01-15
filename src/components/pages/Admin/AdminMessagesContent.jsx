@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import {
   MessageSquare,
   Mail,
@@ -25,7 +25,12 @@ const AdminMessagesContent = ({ token }) => {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [contactStats, setContactStats] = useState({ unread: 0, read: 0, resolved: 0, total: 0 });
+  const [contactStats, setContactStats] = useState({
+    unread: 0,
+    read: 0,
+    resolved: 0,
+    total: 0,
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState("all");
 
@@ -69,33 +74,46 @@ const AdminMessagesContent = ({ token }) => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Message marked as resolved");
+      showToast.success(
+        "Message Resolved",
+        "The message has been marked as resolved."
+      );
       await fetchContactMessages();
       setShowMessageModal(false);
       setSelectedMessage(null);
     } catch (error) {
       console.error("Failed to resolve message:", error);
-      toast.error("Failed to resolve message. Please try again.");
+      showToast.error(
+        "Action Failed",
+        "Failed to resolve message. Please try again."
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDeleteMessage = async (messageId) => {
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    if (!window.confirm("Are you sure you want to delete this message?"))
+      return;
 
     try {
       setActionLoading(true);
       await axios.delete(`${API_URL}/contact/${messageId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("Message deleted successfully");
+      showToast.success(
+        "Message Deleted",
+        "The message has been deleted successfully."
+      );
       await fetchContactMessages();
       setShowMessageModal(false);
       setSelectedMessage(null);
     } catch (error) {
       console.error("Failed to delete message:", error);
-      toast.error("Failed to delete message. Please try again.");
+      showToast.error(
+        "Delete Failed",
+        "Failed to delete message. Please try again."
+      );
     } finally {
       setActionLoading(false);
     }
@@ -138,11 +156,16 @@ const AdminMessagesContent = ({ token }) => {
 
   // Filter and paginate messages
   const filteredMessages =
-    filter === "all" ? contactMessages : contactMessages.filter((m) => m.status === filter);
+    filter === "all"
+      ? contactMessages
+      : contactMessages.filter((m) => m.status === filter);
 
   const totalPages = Math.ceil(filteredMessages.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedMessages = filteredMessages.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedMessages = filteredMessages.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   // Pagination component
   const Pagination = () => {
@@ -151,8 +174,9 @@ const AdminMessagesContent = ({ token }) => {
     return (
       <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
         <div className="text-sm text-gray-500">
-          Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredMessages.length)}{" "}
-          of {filteredMessages.length} messages
+          Showing {startIndex + 1} to{" "}
+          {Math.min(startIndex + ITEMS_PER_PAGE, filteredMessages.length)} of{" "}
+          {filteredMessages.length} messages
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -163,7 +187,12 @@ const AdminMessagesContent = ({ token }) => {
             <ChevronLeft size={16} />
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+            .filter(
+              (page) =>
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+            )
             .map((page, index, array) => (
               <span key={page}>
                 {index > 0 && array[index - 1] !== page - 1 && (
@@ -182,7 +211,9 @@ const AdminMessagesContent = ({ token }) => {
               </span>
             ))}
           <button
-            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage(Math.min(currentPage + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
             className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -199,11 +230,16 @@ const AdminMessagesContent = ({ token }) => {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/50" onClick={() => setShowMessageModal(false)} />
+        <div
+          className="fixed inset-0 bg-black/50"
+          onClick={() => setShowMessageModal(false)}
+        />
         <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between p-5 border-b">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-gray-800">Contact Message</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Contact Message
+              </h2>
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(
                   selectedMessage.status
@@ -226,14 +262,18 @@ const AdminMessagesContent = ({ token }) => {
                 <Mail className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">{selectedMessage.fullName}</h3>
+                <h3 className="font-semibold text-gray-800">
+                  {selectedMessage.fullName}
+                </h3>
                 <p className="text-sm text-gray-500">{selectedMessage.email}</p>
               </div>
             </div>
 
             <div className="pt-2">
               <p className="text-xs text-gray-500 uppercase mb-1">Subject</p>
-              <p className="font-medium text-gray-800">{selectedMessage.subject}</p>
+              <p className="font-medium text-gray-800">
+                {selectedMessage.subject}
+              </p>
             </div>
 
             <div className="pt-2">
@@ -244,8 +284,12 @@ const AdminMessagesContent = ({ token }) => {
             </div>
 
             <div className="pt-2">
-              <p className="text-xs text-gray-500 uppercase mb-1">Received On</p>
-              <p className="text-sm text-gray-600">{formatDate(selectedMessage.createdAt)}</p>
+              <p className="text-xs text-gray-500 uppercase mb-1">
+                Received On
+              </p>
+              <p className="text-sm text-gray-600">
+                {formatDate(selectedMessage.createdAt)}
+              </p>
             </div>
           </div>
 
@@ -256,7 +300,11 @@ const AdminMessagesContent = ({ token }) => {
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-50"
               >
-                {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
+                {actionLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <XCircle size={18} />
+                )}
                 Delete
               </button>
               <button
@@ -286,7 +334,9 @@ const AdminMessagesContent = ({ token }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Contact Messages</h1>
-          <p className="text-gray-500">Manage customer inquiries and feedback</p>
+          <p className="text-gray-500">
+            Manage customer inquiries and feedback
+          </p>
         </div>
         <button
           onClick={fetchContactMessages}
@@ -304,28 +354,36 @@ const AdminMessagesContent = ({ token }) => {
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
             <Mail size={20} className="text-blue-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{contactStats.unread}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {contactStats.unread}
+          </p>
           <p className="text-sm text-gray-500">Unread</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3">
             <Eye size={20} className="text-yellow-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{contactStats.read}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {contactStats.read}
+          </p>
           <p className="text-sm text-gray-500">Read</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3">
             <CheckCircle size={20} className="text-green-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{contactStats.resolved}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {contactStats.resolved}
+          </p>
           <p className="text-sm text-gray-500">Resolved</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
             <MessageSquare size={20} className="text-purple-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{contactStats.total}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {contactStats.total}
+          </p>
           <p className="text-sm text-gray-500">Total Messages</p>
         </div>
       </div>
@@ -356,7 +414,10 @@ const AdminMessagesContent = ({ token }) => {
 
         {loading ? (
           <div className="p-8 text-center">
-            <Loader2 size={32} className="mx-auto mb-2 text-merogreen animate-spin" />
+            <Loader2
+              size={32}
+              className="mx-auto mb-2 text-merogreen animate-spin"
+            />
             <p className="text-gray-500">Loading messages...</p>
           </div>
         ) : paginatedMessages.length === 0 ? (
@@ -400,7 +461,9 @@ const AdminMessagesContent = ({ token }) => {
                       <div className="flex items-center gap-2">
                         <h4
                           className={`font-medium ${
-                            message.status === "unread" ? "text-gray-900" : "text-gray-700"
+                            message.status === "unread"
+                              ? "text-gray-900"
+                              : "text-gray-700"
                           }`}
                         >
                           {message.fullName}
@@ -409,7 +472,9 @@ const AdminMessagesContent = ({ token }) => {
                           <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 truncate max-w-xs">{message.subject}</p>
+                      <p className="text-sm text-gray-500 truncate max-w-xs">
+                        {message.subject}
+                      </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         <Clock size={12} className="inline mr-1" />
                         {formatDate(message.createdAt)}
@@ -417,7 +482,11 @@ const AdminMessagesContent = ({ token }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(message.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(
+                        message.status
+                      )}`}
+                    >
                       {message.status}
                     </span>
                     <button

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import {
   ShoppingCart,
   Clock,
@@ -62,12 +62,20 @@ const AdminOrdersContent = ({ token }) => {
         { orderStatus, paymentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(orderStatus ? `Order marked as ${orderStatus}` : "Payment status updated");
+      showToast.success(
+        "Order Updated!",
+        orderStatus
+          ? `Order has been marked as ${orderStatus}.`
+          : "Payment status has been updated."
+      );
       fetchOrders();
       fetchOrderStats();
     } catch (err) {
       console.error("Failed to update order:", err);
-      toast.error(err.response?.data?.message || "Failed to update order");
+      showToast.error(
+        "Update Failed",
+        err.response?.data?.message || "Failed to update order."
+      );
     } finally {
       setUpdatingOrder(null);
     }
@@ -103,7 +111,8 @@ const AdminOrdersContent = ({ token }) => {
     return (
       <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
         <div className="text-sm text-gray-500">
-          Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, orders.length)} of{" "}
+          Showing {startIndex + 1} to{" "}
+          {Math.min(startIndex + ITEMS_PER_PAGE, orders.length)} of{" "}
           {orders.length} orders
         </div>
         <div className="flex items-center gap-2">
@@ -115,7 +124,12 @@ const AdminOrdersContent = ({ token }) => {
             <ChevronLeft size={16} />
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+            .filter(
+              (page) =>
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+            )
             .map((page, index, array) => (
               <span key={page}>
                 {index > 0 && array[index - 1] !== page - 1 && (
@@ -134,7 +148,9 @@ const AdminOrdersContent = ({ token }) => {
               </span>
             ))}
           <button
-            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage(Math.min(currentPage + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
             className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -150,7 +166,9 @@ const AdminOrdersContent = ({ token }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Orders Management</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Orders Management
+          </h1>
           <p className="text-gray-500">View and manage all platform orders</p>
         </div>
         <button
@@ -172,21 +190,27 @@ const AdminOrdersContent = ({ token }) => {
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
             <ShoppingCart size={20} className="text-blue-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{orderStats?.totalOrders || 0}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {orderStats?.totalOrders || 0}
+          </p>
           <p className="text-sm text-gray-500">Total Orders</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3">
             <Clock size={20} className="text-yellow-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{orderStats?.pendingOrders || 0}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {orderStats?.pendingOrders || 0}
+          </p>
           <p className="text-sm text-gray-500">Pending Orders</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3">
             <CheckCircle size={20} className="text-green-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-800">{orderStats?.completedOrders || 0}</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {orderStats?.completedOrders || 0}
+          </p>
           <p className="text-sm text-gray-500">Completed</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
@@ -208,7 +232,10 @@ const AdminOrdersContent = ({ token }) => {
 
         {loading ? (
           <div className="p-8 text-center">
-            <Loader2 size={32} className="mx-auto mb-2 text-merogreen animate-spin" />
+            <Loader2
+              size={32}
+              className="mx-auto mb-2 text-merogreen animate-spin"
+            />
             <p className="text-gray-500">Loading orders...</p>
           </div>
         ) : orders.length === 0 ? (
@@ -255,8 +282,12 @@ const AdminOrdersContent = ({ token }) => {
                         {order.orderNumber}
                       </td>
                       <td className="px-5 py-4">
-                        <p className="text-sm text-gray-800">{order.user?.fullName || "N/A"}</p>
-                        <p className="text-xs text-gray-500">{order.user?.email || ""}</p>
+                        <p className="text-sm text-gray-800">
+                          {order.user?.fullName || "N/A"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {order.user?.email || ""}
+                        </p>
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-600">
                         {order.items?.length || 0} item(s)
@@ -293,7 +324,9 @@ const AdminOrdersContent = ({ token }) => {
                         <div className="flex items-center gap-1">
                           {order.orderStatus === "shipped" && (
                             <button
-                              onClick={() => updateOrderStatus(order._id, "delivered")}
+                              onClick={() =>
+                                updateOrderStatus(order._id, "delivered")
+                              }
                               disabled={updatingOrder === order._id}
                               className="p-1.5 text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
                               title="Mark as Delivered"
@@ -307,7 +340,9 @@ const AdminOrdersContent = ({ token }) => {
                           )}
                           {order.orderStatus === "processing" && (
                             <button
-                              onClick={() => updateOrderStatus(order._id, "shipped")}
+                              onClick={() =>
+                                updateOrderStatus(order._id, "shipped")
+                              }
                               disabled={updatingOrder === order._id}
                               className="p-1.5 text-purple-600 hover:bg-purple-50 rounded disabled:opacity-50"
                               title="Mark as Shipped"
@@ -319,9 +354,12 @@ const AdminOrdersContent = ({ token }) => {
                               )}
                             </button>
                           )}
-                          {(order.orderStatus === "pending" || order.orderStatus === "confirmed") && (
+                          {(order.orderStatus === "pending" ||
+                            order.orderStatus === "confirmed") && (
                             <button
-                              onClick={() => updateOrderStatus(order._id, "processing")}
+                              onClick={() =>
+                                updateOrderStatus(order._id, "processing")
+                              }
                               disabled={updatingOrder === order._id}
                               className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
                               title="Mark as Processing"
@@ -333,20 +371,23 @@ const AdminOrdersContent = ({ token }) => {
                               )}
                             </button>
                           )}
-                          {order.paymentStatus === "pending" && order.paymentMethod === "cod" && (
-                            <button
-                              onClick={() => updateOrderStatus(order._id, null, "paid")}
-                              disabled={updatingOrder === order._id}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
-                              title="Mark as Paid"
-                            >
-                              {updatingOrder === order._id ? (
-                                <Loader2 size={16} className="animate-spin" />
-                              ) : (
-                                <DollarSign size={16} />
-                              )}
-                            </button>
-                          )}
+                          {order.paymentStatus === "pending" &&
+                            order.paymentMethod === "cod" && (
+                              <button
+                                onClick={() =>
+                                  updateOrderStatus(order._id, null, "paid")
+                                }
+                                disabled={updatingOrder === order._id}
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
+                                title="Mark as Paid"
+                              >
+                                {updatingOrder === order._id ? (
+                                  <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                  <DollarSign size={16} />
+                                )}
+                              </button>
+                            )}
                         </div>
                       </td>
                     </tr>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import {
   User,
   Shield,
@@ -102,9 +102,15 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
           phone: profileData.phone,
         });
       }
-      toast.success("Profile updated successfully!");
+      showToast.success(
+        "Profile Updated!",
+        "Your profile has been updated successfully."
+      );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update profile");
+      showToast.error(
+        "Update Failed",
+        err.response?.data?.message || "Failed to update profile."
+      );
     } finally {
       setLoading(false);
     }
@@ -112,11 +118,14 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords do not match");
+      showToast.error("Password Mismatch", "New passwords do not match.");
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      showToast.error(
+        "Invalid Password",
+        "Password must be at least 6 characters."
+      );
       return;
     }
     try {
@@ -129,10 +138,20 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      toast.success("Password changed successfully!");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      showToast.success(
+        "Password Changed!",
+        "Your password has been changed successfully."
+      );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to change password");
+      showToast.error(
+        "Change Failed",
+        err.response?.data?.message || "Failed to change password."
+      );
     } finally {
       setLoading(false);
     }
@@ -149,9 +168,15 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Notification settings saved!");
+      showToast.success(
+        "Settings Saved!",
+        "Notification settings have been saved."
+      );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save notification settings");
+      showToast.error(
+        "Save Failed",
+        err.response?.data?.message || "Failed to save notification settings."
+      );
     } finally {
       setLoading(false);
     }
@@ -168,7 +193,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-        <p className="text-gray-500">Manage your account and platform settings</p>
+        <p className="text-gray-500">
+          Manage your account and platform settings
+        </p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -201,7 +228,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
             {/* Profile Settings */}
             {activeTab === "profile" && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-6">Profile Settings</h2>
+                <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                  Profile Settings
+                </h2>
 
                 {/* Avatar Section */}
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
@@ -216,7 +245,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                     </button>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">{profileData.fullName}</h3>
+                    <h3 className="font-medium text-gray-800">
+                      {profileData.fullName}
+                    </h3>
                     <p className="text-sm text-gray-500">Administrator</p>
                   </div>
                 </div>
@@ -228,12 +259,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       Full Name
                     </label>
                     <div className="relative">
-                      <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <User
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type="text"
                         value={profileData.fullName}
                         onChange={(e) =>
-                          setProfileData({ ...profileData, fullName: e.target.value })
+                          setProfileData({
+                            ...profileData,
+                            fullName: e.target.value,
+                          })
                         }
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
                         placeholder="Enter your full name"
@@ -246,7 +283,10 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Mail
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type="email"
                         value={profileData.email}
@@ -254,7 +294,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Email cannot be changed
+                    </p>
                   </div>
 
                   <div>
@@ -262,12 +304,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       Phone Number
                     </label>
                     <div className="relative">
-                      <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Phone
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type="tel"
                         value={profileData.phone}
                         onChange={(e) =>
-                          setProfileData({ ...profileData, phone: e.target.value })
+                          setProfileData({
+                            ...profileData,
+                            phone: e.target.value,
+                          })
                         }
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
                         placeholder="Enter your phone number"
@@ -296,7 +344,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
             {/* Security Settings */}
             {activeTab === "security" && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-6">Security Settings</h2>
+                <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                  Security Settings
+                </h2>
 
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <div className="flex items-center gap-3">
@@ -304,7 +354,9 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       <Lock size={20} className="text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-800">Change Password</h3>
+                      <h3 className="font-medium text-gray-800">
+                        Change Password
+                      </h3>
                       <p className="text-sm text-gray-500">
                         Update your password to keep your account secure
                       </p>
@@ -318,12 +370,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       Current Password
                     </label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type={showPasswords.current ? "text" : "password"}
                         value={passwordData.currentPassword}
                         onChange={(e) =>
-                          setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                          setPasswordData({
+                            ...passwordData,
+                            currentPassword: e.target.value,
+                          })
                         }
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
                         placeholder="Enter current password"
@@ -331,11 +389,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       <button
                         type="button"
                         onClick={() =>
-                          setShowPasswords({ ...showPasswords, current: !showPasswords.current })
+                          setShowPasswords({
+                            ...showPasswords,
+                            current: !showPasswords.current,
+                          })
                         }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPasswords.current ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -345,12 +410,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       New Password
                     </label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type={showPasswords.new ? "text" : "password"}
                         value={passwordData.newPassword}
                         onChange={(e) =>
-                          setPasswordData({ ...passwordData, newPassword: e.target.value })
+                          setPasswordData({
+                            ...passwordData,
+                            newPassword: e.target.value,
+                          })
                         }
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
                         placeholder="Enter new password"
@@ -358,11 +429,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       <button
                         type="button"
                         onClick={() =>
-                          setShowPasswords({ ...showPasswords, new: !showPasswords.new })
+                          setShowPasswords({
+                            ...showPasswords,
+                            new: !showPasswords.new,
+                          })
                         }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPasswords.new ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -372,12 +450,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       Confirm New Password
                     </label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Lock
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
                       <input
                         type={showPasswords.confirm ? "text" : "password"}
                         value={passwordData.confirmPassword}
                         onChange={(e) =>
-                          setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                          setPasswordData({
+                            ...passwordData,
+                            confirmPassword: e.target.value,
+                          })
                         }
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
                         placeholder="Confirm new password"
@@ -385,11 +469,18 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
                       <button
                         type="button"
                         onClick={() =>
-                          setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })
+                          setShowPasswords({
+                            ...showPasswords,
+                            confirm: !showPasswords.confirm,
+                          })
                         }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPasswords.confirm ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -420,156 +511,179 @@ const AdminSettingsContent = ({ token, user, updateUser }) => {
             {/* Notification Settings */}
             {activeTab === "notifications" && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-6">Notification Settings</h2>
+                <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                  Notification Settings
+                </h2>
 
                 {notificationsLoading ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 size={32} className="animate-spin text-merogreen" />
+                    <Loader2
+                      size={32}
+                      className="animate-spin text-merogreen"
+                    />
                   </div>
                 ) : (
-                <div className="space-y-4">
-                  {/* Admin Email */}
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-800 mb-3">Notification Email</h3>
-                    <p className="text-sm text-gray-500 mb-3">
-                      All notifications will be sent to this email address
-                    </p>
-                    <div className="relative">
-                      <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="email"
-                        value={adminEmail}
-                        onChange={(e) => setAdminEmail(e.target.value)}
-                        placeholder="Enter email address for notifications"
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Email Notifications */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-800 mb-4">Email Notifications</h3>
-                    <div className="space-y-3">
-                      {[
-                        {
-                          key: "emailOnNewOrder",
-                          label: "New Order",
-                          desc: "Receive email when a new order is placed",
-                        },
-                        {
-                          key: "emailOnNewVendor",
-                          label: "New Vendor Registration",
-                          desc: "Receive email when a new vendor applies",
-                        },
-                        {
-                          key: "emailOnNewCustomer",
-                          label: "New Customer Registration",
-                          desc: "Receive email when a new customer signs up",
-                        },
-                        {
-                          key: "emailOnLowStock",
-                          label: "Low Stock Alert",
-                          desc: "Receive email when product stock is low",
-                        },
-                        {
-                          key: "emailOnContactMessage",
-                          label: "Contact Form Message",
-                          desc: "Receive email when someone submits contact form",
-                        },
-                      ].map((item) => (
-                        <label
-                          key={item.key}
-                          className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
-                        >
-                          <div>
-                            <p className="font-medium text-gray-800">{item.label}</p>
-                            <p className="text-sm text-gray-500">{item.desc}</p>
-                          </div>
-                          <div className="relative">
-                            <input
-                              type="checkbox"
-                              checked={notificationData[item.key]}
-                              onChange={(e) =>
-                                setNotificationData({
-                                  ...notificationData,
-                                  [item.key]: e.target.checked,
-                                })
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-merogreen after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Report Settings */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-800 mb-4">Scheduled Reports</h3>
-                    <div className="space-y-3">
-                      {[
-                        {
-                          key: "dailyReport",
-                          label: "Daily Summary Report",
-                          desc: "Automatically sent every day at 6:00 AM",
-                        },
-                        {
-                          key: "weeklyReport",
-                          label: "Weekly Analytics Report",
-                          desc: "Automatically sent every Monday at 7:00 AM",
-                        },
-                      ].map((item) => (
-                        <label
-                          key={item.key}
-                          className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
-                        >
-                          <div>
-                            <p className="font-medium text-gray-800">{item.label}</p>
-                            <p className="text-sm text-gray-500">{item.desc}</p>
-                          </div>
-                          <div className="relative">
-                            <input
-                              type="checkbox"
-                              checked={notificationData[item.key]}
-                              onChange={(e) =>
-                                setNotificationData({
-                                  ...notificationData,
-                                  [item.key]: e.target.checked,
-                                })
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-merogreen after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Reports include order summaries, revenue metrics, top products, and low stock alerts.
-                    </p>
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <button
-                      onClick={handleSaveNotifications}
-                      disabled={loading || !adminEmail}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-merogreen text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
-                    >
-                      {loading ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <Save size={18} />
-                      )}
-                      Save Notification Settings
-                    </button>
-                    {!adminEmail && (
-                      <p className="text-sm text-orange-600 mt-2">
-                        Please enter an email address to receive notifications
+                  <div className="space-y-4">
+                    {/* Admin Email */}
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <h3 className="font-medium text-gray-800 mb-3">
+                        Notification Email
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-3">
+                        All notifications will be sent to this email address
                       </p>
-                    )}
+                      <div className="relative">
+                        <Mail
+                          size={18}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                          type="email"
+                          value={adminEmail}
+                          onChange={(e) => setAdminEmail(e.target.value)}
+                          placeholder="Enter email address for notifications"
+                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-merogreen"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Notifications */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="font-medium text-gray-800 mb-4">
+                        Email Notifications
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          {
+                            key: "emailOnNewOrder",
+                            label: "New Order",
+                            desc: "Receive email when a new order is placed",
+                          },
+                          {
+                            key: "emailOnNewVendor",
+                            label: "New Vendor Registration",
+                            desc: "Receive email when a new vendor applies",
+                          },
+                          {
+                            key: "emailOnNewCustomer",
+                            label: "New Customer Registration",
+                            desc: "Receive email when a new customer signs up",
+                          },
+                          {
+                            key: "emailOnLowStock",
+                            label: "Low Stock Alert",
+                            desc: "Receive email when product stock is low",
+                          },
+                          {
+                            key: "emailOnContactMessage",
+                            label: "Contact Form Message",
+                            desc: "Receive email when someone submits contact form",
+                          },
+                        ].map((item) => (
+                          <label
+                            key={item.key}
+                            className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
+                          >
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {item.label}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {item.desc}
+                              </p>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                checked={notificationData[item.key]}
+                                onChange={(e) =>
+                                  setNotificationData({
+                                    ...notificationData,
+                                    [item.key]: e.target.checked,
+                                  })
+                                }
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-merogreen after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Report Settings */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="font-medium text-gray-800 mb-4">
+                        Scheduled Reports
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          {
+                            key: "dailyReport",
+                            label: "Daily Summary Report",
+                            desc: "Automatically sent every day at 6:00 AM",
+                          },
+                          {
+                            key: "weeklyReport",
+                            label: "Weekly Analytics Report",
+                            desc: "Automatically sent every Monday at 7:00 AM",
+                          },
+                        ].map((item) => (
+                          <label
+                            key={item.key}
+                            className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
+                          >
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {item.label}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {item.desc}
+                              </p>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                checked={notificationData[item.key]}
+                                onChange={(e) =>
+                                  setNotificationData({
+                                    ...notificationData,
+                                    [item.key]: e.target.checked,
+                                  })
+                                }
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-merogreen after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-3">
+                        Reports include order summaries, revenue metrics, top
+                        products, and low stock alerts.
+                      </p>
+                    </div>
+
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                      <button
+                        onClick={handleSaveNotifications}
+                        disabled={loading || !adminEmail}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-merogreen text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                      >
+                        {loading ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Save size={18} />
+                        )}
+                        Save Notification Settings
+                      </button>
+                      {!adminEmail && (
+                        <p className="text-sm text-orange-600 mt-2">
+                          Please enter an email address to receive notifications
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
             )}

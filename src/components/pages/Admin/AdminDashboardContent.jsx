@@ -91,14 +91,17 @@ const AdminDashboardContent = ({ token }) => {
     );
   }
 
-  const { stats, revenueTrend, regionalDistribution, topVendors } = dashboardData || {};
+  const { stats, revenueTrend, regionalDistribution, topVendors } =
+    dashboardData || {};
 
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Platform Overview</h1>
-        <p className="text-gray-500">Monitor MeroBazaar marketplace performance</p>
+        <p className="text-gray-500">
+          Monitor MeroBazaar marketplace performance
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -110,16 +113,27 @@ const AdminDashboardContent = ({ token }) => {
               <DollarSign size={20} className="text-merogreen" />
             </div>
             {stats?.revenueGrowth !== 0 && (
-              <div className={`flex items-center gap-1 text-xs font-medium ${
-                stats?.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
-              }`}>
-                {stats?.revenueGrowth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                {stats?.revenueGrowth >= 0 ? "+" : ""}{stats?.revenueGrowth}%
+              <div
+                className={`flex items-center gap-1 text-xs font-medium ${
+                  stats?.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {stats?.revenueGrowth >= 0 ? (
+                  <TrendingUp size={14} />
+                ) : (
+                  <TrendingDown size={14} />
+                )}
+                {stats?.revenueGrowth >= 0 ? "+" : ""}
+                {stats?.revenueGrowth}%
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Revenue</p>
-          <p className="text-2xl font-bold text-gray-800">{formatCurrency(stats?.totalRevenue)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            Total Revenue
+          </p>
+          <p className="text-2xl font-bold text-gray-800">
+            {formatCurrency(stats?.totalRevenue)}
+          </p>
           <p className="text-xs text-gray-400 mt-1">Platform-wide revenue</p>
         </div>
 
@@ -131,13 +145,16 @@ const AdminDashboardContent = ({ token }) => {
             </div>
             {stats?.newVendorsThisMonth > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
-                <TrendingUp size={14} />
-                +{stats?.newVendorsThisMonth}
+                <TrendingUp size={14} />+{stats?.newVendorsThisMonth}
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Active Vendors</p>
-          <p className="text-2xl font-bold text-gray-800">{stats?.activeVendors || 0}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            Active Vendors
+          </p>
+          <p className="text-2xl font-bold text-gray-800">
+            {stats?.activeVendors || 0}
+          </p>
           <p className="text-xs text-gray-400 mt-1">Registered vendors</p>
         </div>
 
@@ -149,13 +166,17 @@ const AdminDashboardContent = ({ token }) => {
             </div>
             {stats?.newCustomersThisMonth > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
-                <TrendingUp size={14} />
-                +{stats?.newCustomersThisMonth?.toLocaleString()}
+                <TrendingUp size={14} />+
+                {stats?.newCustomersThisMonth?.toLocaleString()}
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Customers</p>
-          <p className="text-2xl font-bold text-gray-800">{stats?.totalCustomers?.toLocaleString() || 0}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            Total Customers
+          </p>
+          <p className="text-2xl font-bold text-gray-800">
+            {stats?.totalCustomers?.toLocaleString() || 0}
+          </p>
           <p className="text-xs text-gray-400 mt-1">Active users</p>
         </div>
 
@@ -166,16 +187,27 @@ const AdminDashboardContent = ({ token }) => {
               <ShoppingCart size={20} className="text-purple-600" />
             </div>
             {stats?.ordersGrowth !== 0 && (
-              <div className={`flex items-center gap-1 text-xs font-medium ${
-                stats?.ordersGrowth >= 0 ? "text-green-600" : "text-red-600"
-              }`}>
-                {stats?.ordersGrowth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                {stats?.ordersGrowth >= 0 ? "+" : ""}{stats?.ordersGrowth}%
+              <div
+                className={`flex items-center gap-1 text-xs font-medium ${
+                  stats?.ordersGrowth >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {stats?.ordersGrowth >= 0 ? (
+                  <TrendingUp size={14} />
+                ) : (
+                  <TrendingDown size={14} />
+                )}
+                {stats?.ordersGrowth >= 0 ? "+" : ""}
+                {stats?.ordersGrowth}%
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Orders</p>
-          <p className="text-2xl font-bold text-gray-800">{stats?.totalOrders?.toLocaleString() || 0}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            Total Orders
+          </p>
+          <p className="text-2xl font-bold text-gray-800">
+            {stats?.totalOrders?.toLocaleString() || 0}
+          </p>
           <p className="text-xs text-gray-400 mt-1">This month</p>
         </div>
       </div>
@@ -185,8 +217,12 @@ const AdminDashboardContent = ({ token }) => {
         {/* Revenue Trend Chart */}
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="mb-4">
-            <h3 className="font-semibold text-gray-800">Platform Revenue Trend</h3>
-            <p className="text-sm text-gray-500">Monthly revenue and order volume</p>
+            <h3 className="font-semibold text-gray-800">
+              Platform Revenue Trend
+            </h3>
+            <p className="text-sm text-gray-500">
+              Monthly revenue and order volume
+            </p>
           </div>
 
           {revenueTrend?.length > 0 ? (
@@ -194,13 +230,23 @@ const AdminDashboardContent = ({ token }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueTrend}>
                   <defs>
-                    <linearGradient id="colorRevenueTrend" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorRevenueTrend"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 12 }}
+                    stroke="#9CA3AF"
+                  />
                   <YAxis
                     tick={{ fontSize: 12 }}
                     stroke="#9CA3AF"
@@ -235,7 +281,9 @@ const AdminDashboardContent = ({ token }) => {
         {/* Regional Distribution */}
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="mb-4">
-            <h3 className="font-semibold text-gray-800">Regional Distribution</h3>
+            <h3 className="font-semibold text-gray-800">
+              Regional Distribution
+            </h3>
             <p className="text-sm text-gray-500">Sales by region</p>
           </div>
 
@@ -259,7 +307,9 @@ const AdminDashboardContent = ({ token }) => {
                     </Pie>
                     <Tooltip
                       formatter={(value, name, props) => [
-                        `NPR ${value?.toLocaleString()} (${props.payload.percentage}%)`,
+                        `NPR ${value?.toLocaleString()} (${
+                          props.payload.percentage
+                        }%)`,
                         props.payload.name,
                       ]}
                       contentStyle={{
@@ -274,13 +324,18 @@ const AdminDashboardContent = ({ token }) => {
               {/* Legend */}
               <div className="grid grid-cols-2 gap-2 mt-4">
                 {regionalDistribution.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2 text-sm">
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <div
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="text-gray-600 truncate">{item.name}</span>
-                    <span className="text-gray-400 ml-auto">{item.percentage}%</span>
+                    <span className="text-gray-400 ml-auto">
+                      {item.percentage}%
+                    </span>
                   </div>
                 ))}
               </div>
@@ -297,7 +352,9 @@ const AdminDashboardContent = ({ token }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div>
-            <h3 className="font-semibold text-gray-800">Top Performing Vendors</h3>
+            <h3 className="font-semibold text-gray-800">
+              Top Performing Vendors
+            </h3>
             <p className="text-sm text-gray-500">Based on revenue and growth</p>
           </div>
           <Link
@@ -352,23 +409,34 @@ const AdminDashboardContent = ({ token }) => {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-medium text-gray-800">{vendor.businessName}</p>
+                      <p className="font-medium text-gray-800">
+                        {vendor.businessName}
+                      </p>
                     </td>
                     <td className="px-5 py-4 text-right">
                       <p className="font-medium text-gray-800">
                         NPR {vendor.revenue?.toLocaleString()}
                       </p>
                     </td>
-                    <td className="px-5 py-4 text-center text-gray-600">{vendor.orders}</td>
-                    <td className="px-5 py-4 text-center text-gray-600">{vendor.products}</td>
+                    <td className="px-5 py-4 text-center text-gray-600">
+                      {vendor.orders}
+                    </td>
+                    <td className="px-5 py-4 text-center text-gray-600">
+                      {vendor.products}
+                    </td>
                     <td className="px-5 py-4 text-right">
                       <span
                         className={`inline-flex items-center gap-1 text-sm font-medium ${
                           vendor.growth >= 0 ? "text-green-600" : "text-red-600"
                         }`}
                       >
-                        {vendor.growth >= 0 ? <ArrowUpRight size={14} /> : <TrendingDown size={14} />}
-                        {vendor.growth >= 0 ? "+" : ""}{vendor.growth}%
+                        {vendor.growth >= 0 ? (
+                          <ArrowUpRight size={14} />
+                        ) : (
+                          <TrendingDown size={14} />
+                        )}
+                        {vendor.growth >= 0 ? "+" : ""}
+                        {vendor.growth}%
                       </span>
                     </td>
                   </tr>
