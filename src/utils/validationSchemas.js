@@ -38,8 +38,8 @@ export const passwordSchema = z
 
 export const phoneSchema = z
   .string()
-  .min(10, "Phone number must be at least 10 digits")
-  .regex(/^[+]?[\d\s-]+$/, "Please enter a valid phone number");
+  .length(10, "Phone number must be exactly 10 digits")
+  .regex(/^\d{10}$/, "Phone number must be exactly 10 digits");
 
 export const nameSchema = z
   .string()

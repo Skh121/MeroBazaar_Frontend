@@ -324,7 +324,7 @@ const VendorSignupPage = () => {
                       <Phone className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="tel"
-                        placeholder="+977 98XXXXXXXX"
+                        placeholder="98XXXXXXXX"
                         value={formData.phone}
                         onChange={(e) =>
                           updateFormData("phone", e.target.value)
