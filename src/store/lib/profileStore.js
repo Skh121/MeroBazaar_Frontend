@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -183,13 +183,16 @@ export const useProfileStore = create((set, get) => ({
         setUser({ ...user, fullName, token });
       }
 
-      toast.success("Profile updated successfully!");
+      showToast.success(
+        "Profile Updated!",
+        "Your profile has been updated successfully."
+      );
       return { success: true };
     } catch (err) {
       console.error("Failed to update profile:", err);
       const errorMsg =
         err.response?.data?.message || "Failed to update profile";
-      toast.error(errorMsg);
+      showToast.error("Update Failed", errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
@@ -208,12 +211,15 @@ export const useProfileStore = create((set, get) => ({
       get().resetNewAddress();
       await get().fetchProfile(token);
 
-      toast.success("Address added successfully!");
+      showToast.success(
+        "Address Added!",
+        "Your address has been added successfully."
+      );
       return { success: true };
     } catch (err) {
       console.error("Failed to add address:", err);
       const errorMsg = err.response?.data?.message || "Failed to add address";
-      toast.error(errorMsg);
+      showToast.error("Add Address Failed", errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
@@ -224,7 +230,10 @@ export const useProfileStore = create((set, get) => ({
     const { security } = get();
 
     if (security.newPassword !== security.confirmPassword) {
-      toast.error("Passwords do not match");
+      showToast.error(
+        "Password Mismatch",
+        "New password and confirm password do not match."
+      );
       return { success: false, message: "Passwords do not match" };
     }
 
@@ -241,13 +250,16 @@ export const useProfileStore = create((set, get) => ({
       );
 
       get().resetSecurity();
-      toast.success("Password changed successfully!");
+      showToast.success(
+        "Password Changed!",
+        "Your password has been changed successfully."
+      );
       return { success: true };
     } catch (err) {
       console.error("Failed to change password:", err);
       const errorMsg =
         err.response?.data?.message || "Failed to change password";
-      toast.error(errorMsg);
+      showToast.error("Password Change Failed", errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ saving: false });
@@ -279,13 +291,16 @@ export const useProfileStore = create((set, get) => ({
         updateUser({ avatar: avatarUrl });
       }
 
-      toast.success("Profile picture updated!");
+      showToast.success(
+        "Avatar Updated!",
+        "Your profile picture has been updated."
+      );
       return { success: true, avatar: avatarUrl };
     } catch (err) {
       console.error("Failed to upload avatar:", err);
       const errorMsg =
         err.response?.data?.message || "Failed to upload profile picture";
-      toast.error(errorMsg);
+      showToast.error("Upload Failed", errorMsg);
       return { success: false, message: errorMsg };
     } finally {
       set({ uploadingAvatar: false });

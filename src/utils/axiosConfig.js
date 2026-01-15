@@ -8,13 +8,16 @@ export const setupAxiosInterceptors = () => {
     (error) => {
       // Check if the error is due to suspended account
       if (error.response?.status === 403 && error.response?.data?.suspended) {
-        const reason = error.response.data.reason || "Your account has been suspended.";
+        const reason =
+          error.response.data.reason || "Your account has been suspended.";
 
         // Clear auth state and log out user
         useAuthStore.getState().logout();
 
         // Show alert to user
-        alert(`Account Suspended: ${reason}\n\nYou have been logged out. Please contact support for assistance.`);
+        alert(
+          `Account Suspended: ${reason}\n\nYou have been logged out. Please contact support for assistance.`
+        );
 
         // Redirect to login page
         window.location.href = "/login";

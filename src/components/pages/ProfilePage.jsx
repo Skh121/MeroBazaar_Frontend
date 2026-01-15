@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -18,6 +18,13 @@ import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
 import { useProfileStore } from "../../store/lib/profileStore";
+import {
+  profileUpdateSchema,
+  changePasswordSchema,
+  validateForm,
+  getFirstError,
+} from "../../utils/validationSchemas";
+import showToast from "../../utils/customToast";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -55,6 +62,9 @@ const ProfilePage = () => {
   // Avatar file input ref
   const avatarInputRef = useRef(null);
 
+  // Form errors state
+  const [formErrors, setFormErrors] = useState({});
+
   // Redirect if not logged in
   useEffect(() => {
     if (!user || !token) {
@@ -78,10 +88,38 @@ const ProfilePage = () => {
   }, [activeTab, orders.length, token, fetchOrders]);
 
   const handlePersonalInfoChange = (e) => {
-    updatePersonalInfoField(e.target.name, e.target.value);
+    const { name, value } = e.target;
+    updatePersonalInfoField(name, value);
+    // Clear field error when user types
+    if (formErrors[name]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSecurityChange = (field, value) => {
+    updateSecurityField(field, value);
+    // Clear field error when user types
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleSavePersonalInfo = async () => {
+    // Validate personal info
+    const validation = validateForm(profileUpdateSchema, personalInfo);
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    setFormErrors({});
     await savePersonalInfo(token, setUser, user);
   };
 
@@ -90,6 +128,13 @@ const ProfilePage = () => {
   };
 
   const handleChangePassword = async () => {
+    // Validate password change
+    const validation = validateForm(changePasswordSchema, security);
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    setFormErrors({});
     await changePassword(token);
   };
 
@@ -110,13 +155,16 @@ const ProfilePage = () => {
       "image/webp",
     ];
     if (!allowedTypes.includes(file.type)) {
-      alert("Please select an image file (JPEG, PNG, GIF, or WebP)");
+      showToast.error(
+        "Invalid File",
+        "Please select an image file (JPEG, PNG, GIF, or WebP)"
+      );
       return;
     }
 
     // Validate file size (2MB max)
     if (file.size > 2 * 1024 * 1024) {
-      alert("File size must be less than 2MB");
+      showToast.error("File Too Large", "File size must be less than 2MB");
       return;
     }
 
@@ -712,14 +760,23 @@ const ProfilePage = () => {
                           type="password"
                           value={security.currentPassword}
                           onChange={(e) =>
-                            updateSecurityField(
+                            handleSecurityChange(
                               "currentPassword",
                               e.target.value
                             )
                           }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                            formErrors.currentPassword
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
                           placeholder="Enter current password"
                         />
+                        {formErrors.currentPassword && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {formErrors.currentPassword}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -729,11 +786,20 @@ const ProfilePage = () => {
                           type="password"
                           value={security.newPassword}
                           onChange={(e) =>
-                            updateSecurityField("newPassword", e.target.value)
+                            handleSecurityChange("newPassword", e.target.value)
                           }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                            formErrors.newPassword
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
                           placeholder="Enter new password"
                         />
+                        {formErrors.newPassword && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {formErrors.newPassword}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -743,14 +809,23 @@ const ProfilePage = () => {
                           type="password"
                           value={security.confirmPassword}
                           onChange={(e) =>
-                            updateSecurityField(
+                            handleSecurityChange(
                               "confirmPassword",
                               e.target.value
                             )
                           }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                            formErrors.confirmPassword
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
                           placeholder="Confirm new password"
                         />
+                        {formErrors.confirmPassword && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {formErrors.confirmPassword}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

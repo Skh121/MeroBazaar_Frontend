@@ -25,6 +25,7 @@ import { useAuthStore } from "../../store/lib/authStore";
 import { useCartStore } from "../../store/lib/cartStore";
 import { useWishlistStore } from "../../store/lib/wishlistStore";
 import { useTracking } from "../../hooks/useTracking";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
@@ -150,7 +151,7 @@ const ProductDetails = () => {
     try {
       setSubmittingReview(true);
       if (!token) {
-        alert("Please login to submit a review");
+        showToast.error("Login Required", "Please login to submit a review");
         navigate("/login");
         return;
       }
@@ -162,10 +163,13 @@ const ProductDetails = () => {
       setNewReview({ rating: 5, comment: "" });
       fetchReviews();
       fetchProduct(); // Refresh product to get updated rating
-      alert("Review submitted successfully!");
+      showToast.success("Review Submitted", "Thank you for your review!");
     } catch (err) {
       console.error("Failed to submit review:", err);
-      alert(err.response?.data?.message || "Failed to submit review");
+      showToast.error(
+        "Failed",
+        err.response?.data?.message || "Failed to submit review"
+      );
     } finally {
       setSubmittingReview(false);
     }
@@ -180,7 +184,7 @@ const ProductDetails = () => {
 
   const handleAddToCart = async () => {
     if (!token) {
-      alert("Please login to add items to cart");
+      showToast.error("Login Required", "Please login to add items to cart");
       navigate("/login");
       return;
     }
@@ -192,15 +196,14 @@ const ProductDetails = () => {
     if (result.success) {
       // Track add to cart event for analytics
       trackAddToCart(product._id, product.category, product.price, quantity);
-      alert(`Added ${quantity} ${product.name} to cart`);
-    } else {
-      alert(result.message);
+      // Toast is handled by cartStore
     }
+    // Error toast is already handled by cartStore
   };
 
   const handleBuyNow = async () => {
     if (!token) {
-      alert("Please login to proceed");
+      showToast.error("Login Required", "Please login to proceed");
       navigate("/login");
       return;
     }
@@ -213,14 +216,16 @@ const ProductDetails = () => {
       // Track cart addition for analytics
       trackAddToCart(product._id, product.category, product.price, quantity);
       navigate("/cart");
-    } else {
-      alert(result.message);
     }
+    // Error toast is already handled by cartStore
   };
 
   const handleToggleWishlist = async () => {
     if (!token) {
-      alert("Please login to add to wishlist");
+      showToast.error(
+        "Login Required",
+        "Please login to add items to wishlist"
+      );
       navigate("/login");
       return;
     }
@@ -297,15 +302,38 @@ const ProductDetails = () => {
       <Navbar />
 
       <main className="flex-1">
-        {/* Back to Products Link */}
+        {/* Breadcrumb Navigation */}
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-merogreen transition"
-          >
-            <ChevronLeft size={20} />
-            <span>Back to Products</span>
-          </button>
+          <nav className="flex items-center gap-2 text-sm">
+            <Link
+              to="/"
+              className="text-gray-500 hover:text-merogreen transition"
+            >
+              Home
+            </Link>
+            <ChevronRight size={16} className="text-gray-400" />
+            <Link
+              to="/shop"
+              className="text-gray-500 hover:text-merogreen transition"
+            >
+              Shop
+            </Link>
+            {product.category && (
+              <>
+                <ChevronRight size={16} className="text-gray-400" />
+                <Link
+                  to={`/shop?category=${encodeURIComponent(product.category)}`}
+                  className="text-gray-500 hover:text-merogreen transition"
+                >
+                  {product.category}
+                </Link>
+              </>
+            )}
+            <ChevronRight size={16} className="text-gray-400" />
+            <span className="text-gray-800 font-medium truncate max-w-[200px]">
+              {product.name}
+            </span>
+          </nav>
         </div>
 
         {/* Product Details Section */}
