@@ -40,9 +40,9 @@ const contactInfo = [
 
 const faqs = [
   {
-    question: "How can I track my order?",
+    question: "How can I get my order?",
     answer:
-      "Once your order is shipped, you will receive a tracking number via email. You can also track it directly from your 'Order History' in your profile section.",
+      "Once your order is verified by the vendor and shipped then it goes to the admin through which delivery is handled and shipped to the address location.",
   },
   {
     question: "What are the available payment methods?",
@@ -52,7 +52,7 @@ const faqs = [
   {
     question: "How do I become a vendor on MeroBazaar?",
     answer:
-      "You can click on the 'Become a Vendor' link in the footer, fill out the registration form, and our team will review your application within 2-3 business days.",
+      "You can click on the 'Become a Vendor' link in the Main Page or the Footer Section, fill out the registration form, and our team will review your application within 2-3 business days.",
   },
   {
     question: "What is your return policy?",

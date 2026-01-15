@@ -499,7 +499,7 @@ const CartPage = () => {
                             ? "border-red-500"
                             : "border-gray-300"
                         }`}
-                        placeholder="+977 9800000000"
+                        placeholder="9800000000"
                       />
                       {shippingErrors.phone && (
                         <p className="text-red-500 text-xs mt-1">

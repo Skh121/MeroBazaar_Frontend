@@ -101,10 +101,6 @@ const OrderSuccessPage = () => {
             </>
           )}
 
-          <p className="text-gray-500 mb-8">
-            You will receive an email confirmation shortly
-          </p>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -114,7 +110,7 @@ const OrderSuccessPage = () => {
               Continue Shopping
             </Link>
             <Link
-              to="/orders"
+              to="/profile"
               className="px-8 py-3 border-2 border-merogreen text-merogreen rounded-lg font-semibold hover:bg-green-50 transition"
             >
               View Orders
