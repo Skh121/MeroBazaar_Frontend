@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import {
   User,
   Store,
@@ -85,7 +85,7 @@ const VendorSettings = () => {
       setProfile(response.data);
     } catch (error) {
       console.error("Failed to fetch profile:", error);
-      toast.error("Failed to load profile");
+      showToast.error("Load Failed", "Failed to load profile.");
     } finally {
       setLoading(false);
     }
@@ -120,9 +120,15 @@ const VendorSettings = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProfile(response.data);
-      toast.success("Profile updated successfully!");
+      showToast.success(
+        "Profile Updated!",
+        "Your profile has been updated successfully."
+      );
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update profile");
+      showToast.error(
+        "Update Failed",
+        error.response?.data?.message || "Failed to update profile."
+      );
     } finally {
       setSaving(false);
     }
@@ -133,12 +139,15 @@ const VendorSettings = () => {
 
     // Validation
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error("New passwords do not match");
+      showToast.error("Password Mismatch", "New passwords do not match.");
       return;
     }
 
     if (passwords.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      showToast.error(
+        "Invalid Password",
+        "Password must be at least 6 characters."
+      );
       return;
     }
 
@@ -153,10 +162,20 @@ const VendorSettings = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Password changed successfully!");
-      setPasswords({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      showToast.success(
+        "Password Changed!",
+        "Your password has been changed successfully."
+      );
+      setPasswords({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to change password");
+      showToast.error(
+        "Change Failed",
+        error.response?.data?.message || "Failed to change password."
+      );
     } finally {
       setSaving(false);
     }
@@ -180,7 +199,9 @@ const VendorSettings = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
-        <p className="text-gray-500">Manage your store profile and security settings</p>
+        <p className="text-gray-500">
+          Manage your store profile and security settings
+        </p>
       </div>
 
       {/* Tabs */}
@@ -222,7 +243,8 @@ const VendorSettings = () => {
                     : "bg-red-100 text-red-700"
                 }`}
               >
-                {profile.status?.charAt(0).toUpperCase() + profile.status?.slice(1)}
+                {profile.status?.charAt(0).toUpperCase() +
+                  profile.status?.slice(1)}
               </span>
             </div>
 
@@ -474,10 +496,16 @@ const VendorSettings = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showCurrentPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -505,7 +533,11 @@ const VendorSettings = () => {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showNewPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
@@ -533,15 +565,23 @@ const VendorSettings = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                   {passwords.confirmPassword &&
                     passwords.newPassword !== passwords.confirmPassword && (
-                      <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        Passwords do not match
+                      </p>
                     )}
                 </div>
               </div>
@@ -550,7 +590,11 @@ const VendorSettings = () => {
               <div className="mt-8">
                 <button
                   type="submit"
-                  disabled={saving || !passwords.currentPassword || !passwords.newPassword}
+                  disabled={
+                    saving ||
+                    !passwords.currentPassword ||
+                    !passwords.newPassword
+                  }
                   className="flex items-center gap-2 px-6 py-2.5 bg-merogreen text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {saving ? (
@@ -569,7 +613,9 @@ const VendorSettings = () => {
 
               {/* Security Tips */}
               <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <h4 className="font-medium text-amber-800 mb-2">Security Tips</h4>
+                <h4 className="font-medium text-amber-800 mb-2">
+                  Security Tips
+                </h4>
                 <ul className="text-sm text-amber-700 space-y-1">
                   <li>• Use a strong, unique password</li>
                   <li>• Don't share your password with anyone</li>

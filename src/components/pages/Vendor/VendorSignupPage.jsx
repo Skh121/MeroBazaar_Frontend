@@ -16,6 +16,14 @@ import {
 } from "lucide-react";
 import { useVendorSignup } from "../../../hooks/useAuth";
 import Logo from "../../../assets/images/Logo.svg";
+import {
+  vendorStep1Schema,
+  vendorStep2Schema,
+  vendorStep3Schema,
+  vendorStep4Schema,
+  validateForm,
+  getFirstError,
+} from "../../../utils/validationSchemas";
 
 const STEPS = [
   { id: 1, title: "Business Information", icon: Building2 },
@@ -25,15 +33,11 @@ const STEPS = [
 ];
 
 const CATEGORIES = [
-  "Electronics",
-  "Clothing & Fashion",
-  "Food & Beverages",
-  "Home & Garden",
-  "Health & Beauty",
-  "Sports & Outdoors",
-  "Books & Stationery",
+  "Food & Spices",
+  "Textiles",
   "Handicrafts",
   "Agriculture",
+  "Dairy & Cheese",
   "Other",
 ];
 
@@ -72,65 +76,72 @@ const VendorSignupPage = () => {
   const navigate = useNavigate();
   const { mutate: signup, isPending, error } = useVendorSignup();
 
+  const [formErrors, setFormErrors] = useState({});
+
   const updateFormData = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear field error when user types
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const validateStep = (step) => {
     setLocalError("");
+    let schema;
+    let dataToValidate;
+
     switch (step) {
       case 1:
-        if (
-          !formData.businessName ||
-          !formData.category ||
-          !formData.panNumber ||
-          !formData.phone
-        ) {
-          setLocalError("Please fill all required fields");
-          return false;
-        }
-        if (formData.panNumber.length < 9) {
-          setLocalError("PAN Number must be at least 9 digits");
-          return false;
-        }
-        return true;
+        schema = vendorStep1Schema;
+        dataToValidate = {
+          businessName: formData.businessName,
+          category: formData.category,
+          panNumber: formData.panNumber,
+          phone: formData.phone,
+        };
+        break;
       case 2:
-        if (!formData.ownerName || !formData.email) {
-          setLocalError("Please fill all required fields");
-          return false;
-        }
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
-          setLocalError("Please enter a valid email address");
-          return false;
-        }
-        return true;
+        schema = vendorStep2Schema;
+        dataToValidate = {
+          ownerName: formData.ownerName,
+          email: formData.email,
+        };
+        break;
       case 3:
-        if (!formData.province || !formData.district || !formData.address) {
-          setLocalError("Please fill all required fields");
-          return false;
-        }
-        return true;
+        schema = vendorStep3Schema;
+        dataToValidate = {
+          province: formData.province,
+          district: formData.district,
+          address: formData.address,
+        };
+        break;
       case 4:
-        if (!formData.password || !formData.confirmPassword) {
-          setLocalError("Please fill all required fields");
-          return false;
-        }
-        if (formData.password.length < 8) {
-          setLocalError("Password must be at least 8 characters");
-          return false;
-        }
-        if (formData.password !== formData.confirmPassword) {
-          setLocalError("Passwords do not match");
-          return false;
-        }
-        if (!agreed) {
-          setLocalError("You must agree to the Terms & Conditions");
-          return false;
-        }
-        return true;
+        schema = vendorStep4Schema;
+        dataToValidate = {
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          agreed,
+        };
+        break;
       default:
         return true;
     }
+
+    const validation = validateForm(schema, dataToValidate);
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      const firstError = getFirstError(validation.errors);
+      setLocalError(firstError);
+      return false;
+    }
+
+    setFormErrors({});
+    return true;
   };
 
   const handleNext = () => {
@@ -579,7 +590,7 @@ const VendorSignupPage = () => {
                   to="/vendor/login"
                   className="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition"
                 >
-                  Back to Login
+                  Login to dashboard
                 </Link>
               )}
 

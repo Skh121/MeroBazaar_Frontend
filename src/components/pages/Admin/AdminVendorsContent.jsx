@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import {
   Store,
   Clock,
@@ -74,13 +74,19 @@ const AdminVendorsContent = ({ token }) => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Vendor approved successfully");
+      showToast.success(
+        "Vendor Approved!",
+        "The vendor has been approved successfully."
+      );
       await fetchVendors();
       setShowVendorModal(false);
       setSelectedVendor(null);
     } catch (error) {
       console.error("Failed to approve vendor:", error);
-      toast.error("Failed to approve vendor. Please try again.");
+      showToast.error(
+        "Approval Failed",
+        "Failed to approve vendor. Please try again."
+      );
     } finally {
       setActionLoading(false);
     }
@@ -94,13 +100,19 @@ const AdminVendorsContent = ({ token }) => {
         { reason: "Application rejected by admin" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Vendor rejected");
+      showToast.success(
+        "Vendor Rejected",
+        "The vendor application has been rejected."
+      );
       await fetchVendors();
       setShowVendorModal(false);
       setSelectedVendor(null);
     } catch (error) {
       console.error("Failed to reject vendor:", error);
-      toast.error("Failed to reject vendor. Please try again.");
+      showToast.error(
+        "Rejection Failed",
+        "Failed to reject vendor. Please try again."
+      );
     } finally {
       setActionLoading(false);
     }
@@ -135,14 +147,21 @@ const AdminVendorsContent = ({ token }) => {
   );
 
   // Pagination component
-  const Pagination = ({ currentPage, totalPages, totalItems, startIndex, onPageChange }) => {
+  const Pagination = ({
+    currentPage,
+    totalPages,
+    totalItems,
+    startIndex,
+    onPageChange,
+  }) => {
     if (totalPages <= 1) return null;
 
     return (
       <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
         <div className="text-sm text-gray-500">
-          Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, totalItems)} of{" "}
-          {totalItems} vendors
+          Showing {startIndex + 1} to{" "}
+          {Math.min(startIndex + ITEMS_PER_PAGE, totalItems)} of {totalItems}{" "}
+          vendors
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -153,7 +172,12 @@ const AdminVendorsContent = ({ token }) => {
             <ChevronLeft size={16} />
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+            .filter(
+              (page) =>
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+            )
             .map((page, index, array) => (
               <span key={page}>
                 {index > 0 && array[index - 1] !== page - 1 && (
@@ -189,10 +213,15 @@ const AdminVendorsContent = ({ token }) => {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/50" onClick={() => setShowVendorModal(false)} />
+        <div
+          className="fixed inset-0 bg-black/50"
+          onClick={() => setShowVendorModal(false)}
+        />
         <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between p-5 border-b">
-            <h2 className="text-lg font-semibold text-gray-800">Vendor Application</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Vendor Application
+            </h2>
             <button
               onClick={() => setShowVendorModal(false)}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
@@ -207,19 +236,31 @@ const AdminVendorsContent = ({ token }) => {
                 <Building2 className="w-6 h-6 text-merogreen" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">{selectedVendor.businessName}</h3>
-                <p className="text-sm text-gray-500">{selectedVendor.category}</p>
+                <h3 className="font-semibold text-gray-800">
+                  {selectedVendor.businessName}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {selectedVendor.category}
+                </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
-                <p className="text-xs text-gray-500 uppercase mb-1">Owner Name</p>
-                <p className="font-medium text-gray-800">{selectedVendor.ownerName}</p>
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Owner Name
+                </p>
+                <p className="font-medium text-gray-800">
+                  {selectedVendor.ownerName}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase mb-1">PAN Number</p>
-                <p className="font-medium text-gray-800">{selectedVendor.panNumber}</p>
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  PAN Number
+                </p>
+                <p className="font-medium text-gray-800">
+                  {selectedVendor.panNumber}
+                </p>
               </div>
             </div>
 
@@ -247,7 +288,9 @@ const AdminVendorsContent = ({ token }) => {
 
             <div className="pt-2">
               <p className="text-xs text-gray-500 uppercase mb-1">Applied On</p>
-              <p className="text-sm text-gray-600">{formatDate(selectedVendor.createdAt)}</p>
+              <p className="text-sm text-gray-600">
+                {formatDate(selectedVendor.createdAt)}
+              </p>
             </div>
           </div>
 
@@ -258,7 +301,11 @@ const AdminVendorsContent = ({ token }) => {
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-50"
               >
-                {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
+                {actionLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <XCircle size={18} />
+                )}
                 Reject
               </button>
               <button
@@ -266,7 +313,11 @@ const AdminVendorsContent = ({ token }) => {
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-merogreen text-white font-medium hover:bg-green-700 transition disabled:opacity-50"
               >
-                {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                {actionLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <CheckCircle size={18} />
+                )}
                 Approve
               </button>
             </div>
@@ -291,8 +342,12 @@ const AdminVendorsContent = ({ token }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Vendor Management</h1>
-          <p className="text-gray-500">Approve and manage vendor applications</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Vendor Management
+          </h1>
+          <p className="text-gray-500">
+            Approve and manage vendor applications
+          </p>
         </div>
         <button
           onClick={fetchVendors}
@@ -332,7 +387,9 @@ const AdminVendorsContent = ({ token }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-800">Pending Vendor Approvals</h3>
+            <h3 className="font-semibold text-gray-800">
+              Pending Vendor Approvals
+            </h3>
             <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
               {pendingVendors.length} pending
             </span>
@@ -342,13 +399,18 @@ const AdminVendorsContent = ({ token }) => {
         {pendingVendors.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {pendingVendors.map((vendor) => (
-              <div key={vendor._id} className="flex items-center justify-between p-5 hover:bg-gray-50">
+              <div
+                key={vendor._id}
+                className="flex items-center justify-between p-5 hover:bg-gray-50"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
                     <Store size={24} className="text-gray-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800">{vendor.businessName}</h4>
+                    <h4 className="font-medium text-gray-800">
+                      {vendor.businessName}
+                    </h4>
                     <p className="text-sm text-gray-500">
                       {vendor.ownerName} • {vendor.category}
                     </p>
@@ -388,7 +450,10 @@ const AdminVendorsContent = ({ token }) => {
           </div>
         ) : (
           <div className="p-8 text-center text-gray-500">
-            <CheckCircle size={48} className="mx-auto mb-2 text-green-500 opacity-50" />
+            <CheckCircle
+              size={48}
+              className="mx-auto mb-2 text-green-500 opacity-50"
+            />
             <p>No pending vendor applications</p>
           </div>
         )}
@@ -412,7 +477,9 @@ const AdminVendorsContent = ({ token }) => {
                 className="bg-transparent border-none outline-none ml-2 w-48 text-sm"
               />
             </div>
-            <span className="text-sm text-gray-500">{filteredVendors.length} vendors</span>
+            <span className="text-sm text-gray-500">
+              {filteredVendors.length} vendors
+            </span>
           </div>
         </div>
         {paginatedVendors.length > 0 ? (
@@ -446,11 +513,17 @@ const AdminVendorsContent = ({ token }) => {
                     <tr key={vendor._id} className="hover:bg-gray-50">
                       <td className="px-5 py-4">
                         <div>
-                          <p className="font-medium text-gray-800">{vendor.businessName}</p>
-                          <p className="text-sm text-gray-500">{vendor.ownerName}</p>
+                          <p className="font-medium text-gray-800">
+                            {vendor.businessName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {vendor.ownerName}
+                          </p>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-600">{vendor.category}</td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {vendor.category}
+                      </td>
                       <td className="px-5 py-4 text-sm text-gray-600">
                         {vendor.district}, {vendor.province}
                       </td>
@@ -460,7 +533,9 @@ const AdminVendorsContent = ({ token }) => {
                         </span>
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-600">
-                        {vendor.approvedAt ? formatDate(vendor.approvedAt) : "-"}
+                        {vendor.approvedAt
+                          ? formatDate(vendor.approvedAt)
+                          : "-"}
                       </td>
                       <td className="px-5 py-4">
                         <button

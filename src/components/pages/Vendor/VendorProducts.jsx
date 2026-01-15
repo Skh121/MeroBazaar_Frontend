@@ -13,8 +13,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import { useAuthStore } from "../../../store/lib/authStore";
+import {
+  productSchema,
+  validateForm,
+  getFirstError,
+  sanitizePriceInput,
+  formatPrice,
+} from "../../../utils/validationSchemas";
 
 const CATEGORIES = [
   "Food & Spices",
@@ -61,6 +68,7 @@ const VendorProducts = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchProducts();
@@ -74,7 +82,7 @@ const VendorProducts = () => {
       setProducts(response.data.products || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
-      toast.error("Failed to load products");
+      showToast.error("Load Failed", "Failed to load products.");
     } finally {
       setLoading(false);
     }
@@ -98,6 +106,7 @@ const VendorProducts = () => {
     setEditingProduct(null);
     setImageFiles([]);
     setImagePreviews([]);
+    setFormErrors({});
   };
 
   const openAddModal = () => {
@@ -136,6 +145,36 @@ const VendorProducts = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Clear the error for this field when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+
+    // Sanitize price inputs to prevent long decimal values
+    if (name === "price" || name === "comparePrice") {
+      const sanitizedValue = sanitizePriceInput(value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: sanitizedValue,
+      }));
+      return;
+    }
+
+    // Handle stock to ensure only integers
+    if (name === "stock") {
+      const sanitizedValue = value.replace(/\D/g, "");
+      setFormData((prev) => ({
+        ...prev,
+        [name]: sanitizedValue,
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -149,7 +188,7 @@ const VendorProducts = () => {
     // Check total images limit (5 max)
     const totalImages = imagePreviews.length + files.length;
     if (totalImages > 5) {
-      toast.error("Maximum 5 images allowed");
+      showToast.error("Image Limit", "Maximum 5 images allowed.");
       return;
     }
 
@@ -210,6 +249,19 @@ const VendorProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate form data using Zod
+    const validation = validateForm(productSchema, formData);
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      const firstError = getFirstError(validation.errors);
+      showToast.error(
+        "Validation Error",
+        firstError || "Please check the form for errors"
+      );
+      return;
+    }
+
     setSubmitLoading(true);
 
     try {
@@ -230,13 +282,17 @@ const VendorProducts = () => {
       });
       const allImages = [...existingImages, ...uploadedImages];
 
+      // Format prices to ensure max 2 decimal places
+      const formattedPrice = formatPrice(formData.price);
+      const formattedComparePrice = formData.comparePrice
+        ? formatPrice(formData.comparePrice)
+        : null;
+
       const productData = {
         name: formData.name,
         description: formData.description,
-        price: parseFloat(formData.price),
-        comparePrice: formData.comparePrice
-          ? parseFloat(formData.comparePrice)
-          : null,
+        price: formattedPrice,
+        comparePrice: formattedComparePrice,
         category: formData.category,
         stock: parseInt(formData.stock),
         unit: formData.unit,
@@ -256,10 +312,16 @@ const VendorProducts = () => {
           productData,
           config
         );
-        toast.success("Product updated successfully");
+        showToast.success(
+          "Product Updated!",
+          "Your product has been updated successfully."
+        );
       } else {
         await axios.post(`${API_URL}/products`, productData, config);
-        toast.success("Product created successfully");
+        showToast.success(
+          "Product Created!",
+          "Your product has been created successfully."
+        );
       }
 
       setShowModal(false);
@@ -267,7 +329,10 @@ const VendorProducts = () => {
       fetchProducts();
     } catch (error) {
       console.error("Failed to save product:", error);
-      toast.error(error.response?.data?.message || "Failed to save product");
+      showToast.error(
+        "Save Failed",
+        error.response?.data?.message || "Failed to save product."
+      );
     } finally {
       setSubmitLoading(false);
       setUploadingImages(false);
@@ -282,11 +347,14 @@ const VendorProducts = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`${API_URL}/products/${productId}`, config);
-      toast.success("Product deleted successfully");
+      showToast.success(
+        "Product Deleted",
+        "The product has been deleted successfully."
+      );
       fetchProducts();
     } catch (error) {
       console.error("Failed to delete product:", error);
-      toast.error("Failed to delete product");
+      showToast.error("Delete Failed", "Failed to delete product.");
     } finally {
       setDeleteLoading(null);
     }
@@ -591,9 +659,16 @@ const VendorProducts = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                      formErrors.name ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="e.g., Himalayan Organic Honey"
                   />
+                  {formErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">
@@ -606,9 +681,18 @@ const VendorProducts = () => {
                     onChange={handleInputChange}
                     required
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                      formErrors.description
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     placeholder="Describe your product..."
                   />
+                  {formErrors.description && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.description}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -653,16 +737,24 @@ const VendorProducts = () => {
                     Price (Rs.) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="price"
                     value={formData.price}
                     onChange={handleInputChange}
                     required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
-                    placeholder="599"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                      formErrors.price ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="599.00"
                   />
+                  {formErrors.price && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.price}
+                    </p>
+                  )}
+                  <p className="text-gray-400 text-xs mt-1">
+                    Max 2 decimal places
+                  </p>
                 </div>
 
                 <div>
@@ -670,15 +762,22 @@ const VendorProducts = () => {
                     Compare Price (Rs.)
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="comparePrice"
                     value={formData.comparePrice}
                     onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
-                    placeholder="799 (optional, for showing discount)"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                      formErrors.comparePrice
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="799.00 (optional, for showing discount)"
                   />
+                  {formErrors.comparePrice && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.comparePrice}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -686,15 +785,21 @@ const VendorProducts = () => {
                     Stock *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="stock"
                     value={formData.stock}
                     onChange={handleInputChange}
                     required
-                    min="0"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                      formErrors.stock ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="100"
                   />
+                  {formErrors.stock && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {formErrors.stock}
+                    </p>
+                  )}
                 </div>
 
                 <div>

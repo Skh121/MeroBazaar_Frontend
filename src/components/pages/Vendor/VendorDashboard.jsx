@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../../utils/customToast";
 import VendorProducts from "./VendorProducts";
 import VendorAnalyticsContent from "./VendorAnalyticsContent";
 import VendorSettings from "./VendorSettings";
@@ -128,11 +128,17 @@ const VendorDashboard = () => {
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(`Order marked as ${status}`);
+      showToast.success(
+        "Order Updated!",
+        `Order has been marked as ${status}.`
+      );
       fetchOrders();
     } catch (err) {
       console.error("Failed to update order:", err);
-      toast.error(err.response?.data?.message || "Failed to update order");
+      showToast.error(
+        "Update Failed",
+        err.response?.data?.message || "Failed to update order."
+      );
     } finally {
       setUpdatingOrder(null);
     }

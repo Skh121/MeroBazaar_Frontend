@@ -154,7 +154,9 @@ const VendorDashboardContent = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-500">Welcome back! Here's what's happening with your store.</p>
+        <p className="text-gray-500">
+          Welcome back! Here's what's happening with your store.
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -170,16 +172,24 @@ const VendorDashboardContent = () => {
               className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center`}>
+                <div
+                  className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center`}
+                >
                   <Icon size={20} className={stat.iconColor} />
                 </div>
                 {hasChange && stat.change !== 0 && (
                   <div
                     className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                      isPositive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                      isPositive
+                        ? "bg-green-50 text-green-600"
+                        : "bg-red-50 text-red-600"
                     }`}
                   >
-                    {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                    {isPositive ? (
+                      <ArrowUpRight size={14} />
+                    ) : (
+                      <ArrowDownRight size={14} />
+                    )}
                     {Math.abs(stat.change)}%
                   </div>
                 )}
@@ -199,7 +209,8 @@ const VendorDashboardContent = () => {
             <div>
               <h3 className="font-semibold text-gray-800">Revenue Overview</h3>
               <p className="text-sm text-gray-500">
-                Rs.{stats?.currentPeriodRevenue?.toLocaleString() || 0} this period
+                Rs.{stats?.currentPeriodRevenue?.toLocaleString() || 0} this
+                period
               </p>
             </div>
             <select
@@ -218,17 +229,33 @@ const VendorDashboardContent = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={stats.revenueChartData}>
                   <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorRevenue"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorOrders"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="label" tick={{ fontSize: 12 }} stroke="#9CA3AF" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 12 }}
+                    stroke="#9CA3AF"
+                  />
                   <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
                   <Tooltip content={<CustomTooltip />} />
                   <Area
@@ -296,7 +323,10 @@ const VendorDashboardContent = () => {
               {/* Legend */}
               <div className="space-y-2 mt-4">
                 {stats.orderStatusData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between text-sm"
+                  >
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
@@ -304,7 +334,9 @@ const VendorDashboardContent = () => {
                       />
                       <span className="text-gray-600">{item.name}</span>
                     </div>
-                    <span className="font-medium text-gray-800">{item.value}</span>
+                    <span className="font-medium text-gray-800">
+                      {item.value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -344,8 +376,12 @@ const VendorDashboardContent = () => {
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800 truncate">{product.name}</p>
-                    <p className="text-xs text-gray-500">{product.quantity} sold</p>
+                    <p className="font-medium text-gray-800 truncate">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {product.quantity} sold
+                    </p>
                   </div>
                   <p className="text-sm font-medium text-merogreen">
                     Rs.{product.revenue.toLocaleString()}
@@ -406,8 +442,12 @@ const VendorDashboardContent = () => {
                   {orders.slice(0, 5).map((order) => (
                     <tr key={order._id} className="hover:bg-gray-50">
                       <td className="px-5 py-4">
-                        <p className="text-sm font-medium text-gray-800">{order.orderNumber}</p>
-                        <p className="text-xs text-gray-500">{order.items.length} item(s)</p>
+                        <p className="text-sm font-medium text-gray-800">
+                          {order.orderNumber}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {order.items.length} item(s)
+                        </p>
                       </td>
                       <td className="px-5 py-4 text-sm text-gray-600">
                         {order.user?.fullName || "N/A"}
