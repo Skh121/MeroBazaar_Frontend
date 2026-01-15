@@ -12,6 +12,7 @@ import { useTracking } from "../../hooks/useTracking";
 import { useAuthStore } from "../../store/lib/authStore";
 import { useCartStore } from "../../store/lib/cartStore";
 import { useWishlistStore } from "../../store/lib/wishlistStore";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
@@ -39,7 +40,7 @@ const SpecialtyCard = ({ product, onClick }) => {
     e.stopPropagation();
 
     if (!token) {
-      alert("Please login to add to cart");
+      showToast.error("Login Required", "Please login to add items to cart");
       navigate("/login");
       return;
     }
@@ -50,9 +51,7 @@ const SpecialtyCard = ({ product, onClick }) => {
 
     if (result.success) {
       trackAddToCart(product._id, product.category, product.price, 1);
-      alert(`Added ${product.name} to cart`);
-    } else {
-      alert(result.message || "Failed to add to cart");
+      // Toast is handled by cartStore
     }
   };
 
@@ -60,7 +59,10 @@ const SpecialtyCard = ({ product, onClick }) => {
     e.stopPropagation();
 
     if (!token) {
-      alert("Please login to add to wishlist");
+      showToast.error(
+        "Login Required",
+        "Please login to add items to wishlist"
+      );
       navigate("/login");
       return;
     }

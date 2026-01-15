@@ -1,6 +1,6 @@
-import { GoogleLogin } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
-import { useGoogleAuth } from '../../hooks/useAuth';
+import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
+import { useGoogleAuth } from "../../hooks/useAuth";
 
 const GoogleLoginButton = ({ onSuccess, onError }) => {
   const navigate = useNavigate();
@@ -25,8 +25,9 @@ const GoogleLoginButton = ({ onSuccess, onError }) => {
         onError={() => onError?.({ message: "Google login failed" })}
         theme="outline"
         size="large"
-        width={400}
+        width={420}
         text="continue_with"
+        shape="rectangular"
       />
       {isPending && (
         <p className="text-sm text-gray-500 mt-2 text-center">
