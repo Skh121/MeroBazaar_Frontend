@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -77,6 +77,7 @@ const ShopPage = () => {
   const [addingToCart, setAddingToCart] = useState(null);
   const [togglingWishlist, setTogglingWishlist] = useState(null);
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const filterChangeRef = useRef(false);
 
   // Fetch wishlist on mount if logged in
   useEffect(() => {
@@ -96,6 +97,8 @@ const ShopPage = () => {
 
   // Fetch products when debounced search or filters change
   useEffect(() => {
+    // Mark that this page reset is from a filter change
+    filterChangeRef.current = true;
     setCurrentPage(1);
 
     // Update URL params
@@ -110,21 +113,15 @@ const ShopPage = () => {
     fetchProductsWithSearch(debouncedSearch, 1);
   }, [debouncedSearch, activeCategory, activeRating]);
 
-  // Fetch products when page changes (without resetting page)
+  // Fetch products when page changes (user-initiated)
   useEffect(() => {
-    if (currentPage > 1) {
-      fetchProductsWithSearch(debouncedSearch, currentPage);
+    // Skip if this was triggered by a filter change (already fetched above)
+    if (filterChangeRef.current) {
+      filterChangeRef.current = false;
+      return;
     }
+    fetchProductsWithSearch(debouncedSearch, currentPage);
   }, [currentPage]);
-
-  // Filter products by search query (matches anywhere in name)
-  const filterBySearch = (products, query) => {
-    if (!query || !query.trim()) return products;
-    const searchLower = query.toLowerCase().trim();
-    return products.filter((product) =>
-      product.name.toLowerCase().includes(searchLower)
-    );
-  };
 
   // Separate fetch function that accepts search query directly
   const fetchProductsWithSearch = async (query, page = 1) => {
@@ -148,34 +145,34 @@ const ShopPage = () => {
         params.append("minRating", activeRating);
       }
       params.append("page", page);
-      params.append("limit", PRODUCTS_PER_PAGE * 3); // Fetch more to filter client-side
+      params.append("limit", PRODUCTS_PER_PAGE);
 
       const response = await axios.get(
         `${API_URL}/products?${params.toString()}`
       );
 
-      let fetchedProducts = [];
       if (response.data.products) {
-        fetchedProducts = response.data.products;
+        setProducts(response.data.products);
+        // Use backend pagination data
+        const pagination = response.data.pagination;
+        if (pagination) {
+          setTotalProducts(pagination.total);
+          setTotalPages(pagination.pages);
+        } else {
+          // Fallback if pagination object not present
+          setTotalProducts(response.data.products.length);
+          setTotalPages(1);
+        }
       } else if (Array.isArray(response.data)) {
-        fetchedProducts = response.data;
+        // Fallback for array response (shouldn't happen with current backend)
+        setProducts(response.data);
+        setTotalProducts(response.data.length);
+        setTotalPages(Math.ceil(response.data.length / PRODUCTS_PER_PAGE));
+      } else {
+        setProducts([]);
+        setTotalProducts(0);
+        setTotalPages(1);
       }
-
-      // Apply search filter for partial matching
-      const filteredProducts = filterBySearch(fetchedProducts, query);
-
-      // Paginate filtered results
-      const startIndex = (page - 1) * PRODUCTS_PER_PAGE;
-      const paginatedProducts = filteredProducts.slice(
-        startIndex,
-        startIndex + PRODUCTS_PER_PAGE
-      );
-
-      setProducts(paginatedProducts);
-      setTotalProducts(filteredProducts.length);
-      setTotalPages(
-        Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE) || 1
-      );
     } catch (error) {
       console.error("Failed to fetch products:", error);
       setProducts([]);
@@ -258,54 +255,13 @@ const ShopPage = () => {
     setActiveCategory("all");
     setActiveRating("all");
     setSearchQuery("");
+    setDebouncedSearch("");
     setPriceRange({ min: "", max: "" });
     setCurrentPage(1);
     setSearchParams(new URLSearchParams());
 
     // Fetch all products without any filters
-    const fetchAllProducts = async () => {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams();
-        params.append("page", 1);
-        params.append("limit", PRODUCTS_PER_PAGE);
-
-        const response = await axios.get(
-          `${API_URL}/products?${params.toString()}`
-        );
-
-        if (response.data.products) {
-          setProducts(response.data.products);
-          setTotalProducts(
-            response.data.total || response.data.products.length
-          );
-          setTotalPages(
-            response.data.totalPages ||
-              Math.ceil(
-                (response.data.total || response.data.products.length) /
-                  PRODUCTS_PER_PAGE
-              )
-          );
-        } else if (Array.isArray(response.data)) {
-          setProducts(response.data);
-          setTotalProducts(response.data.length);
-          setTotalPages(Math.ceil(response.data.length / PRODUCTS_PER_PAGE));
-        } else {
-          setProducts([]);
-          setTotalProducts(0);
-          setTotalPages(1);
-        }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-        setProducts([]);
-        setTotalProducts(0);
-        setTotalPages(1);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllProducts();
+    fetchProductsWithSearch("", 1);
   };
 
   // Generate page numbers for pagination
