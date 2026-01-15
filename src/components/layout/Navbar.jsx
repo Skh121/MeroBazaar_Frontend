@@ -6,6 +6,7 @@ import { useAuthStore } from "../../store/lib/authStore";
 import { useCartStore } from "../../store/lib/cartStore";
 import { useWishlistStore } from "../../store/lib/wishlistStore";
 import { useLogout } from "../../hooks/useAuth";
+import showToast from "../../utils/customToast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -62,6 +63,25 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const handleWishlistClick = () => {
+    if (!user) {
+      showToast.warning(
+        "Login Required",
+        "Please login to view your wishlist."
+      );
+      return;
+    }
+    navigate("/wishlist");
+  };
+
+  const handleCartClick = () => {
+    if (!user) {
+      showToast.warning("Login Required", "Please login to view your cart.");
+      return;
+    }
+    navigate("/cart");
+  };
+
   // Get user initials for avatar
   const getInitials = (name) => {
     if (!name) return "U";
@@ -96,9 +116,9 @@ const Navbar = () => {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            <Link
-              to="/wishlist"
-              className="relative text-gray-600 hover:text-merogreen transition-colors"
+            <button
+              onClick={handleWishlistClick}
+              className="relative text-gray-600 hover:text-merogreen transition-colors cursor-pointer"
             >
               <Heart size={22} />
               {wishlistCount > 0 && (
@@ -106,11 +126,11 @@ const Navbar = () => {
                   {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
               )}
-            </Link>
+            </button>
 
-            <Link
-              to="/cart"
-              className="relative text-gray-600 hover:text-merogreen transition-colors"
+            <button
+              onClick={handleCartClick}
+              className="relative text-gray-600 hover:text-merogreen transition-colors cursor-pointer"
             >
               <ShoppingCart size={22} />
               {cartCount > 0 && (
@@ -118,7 +138,7 @@ const Navbar = () => {
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* User Avatar or Sign Up Button */}
             {user ? (

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -55,7 +55,10 @@ export const useWishlistStore = create((set, get) => ({
 
   addToWishlist: async (token, productId) => {
     if (!token) {
-      toast.error("Please login first");
+      showToast.error(
+        "Login Required",
+        "Please login to add items to wishlist."
+      );
       return { success: false, message: "Please login first" };
     }
     try {
@@ -65,13 +68,16 @@ export const useWishlistStore = create((set, get) => ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       get().setWishlist(response.data);
-      toast.success("Added to wishlist!");
+      showToast.success(
+        "Added to Wishlist!",
+        "Item has been added to your wishlist."
+      );
       return { success: true };
     } catch (err) {
       console.error("Failed to add to wishlist:", err);
       const errorMsg =
         err.response?.data?.message || "Failed to add to wishlist";
-      toast.error(errorMsg);
+      showToast.error("Wishlist Error", errorMsg);
       return {
         success: false,
         message: errorMsg,
@@ -86,13 +92,16 @@ export const useWishlistStore = create((set, get) => ({
         headers: { Authorization: `Bearer ${token}` },
       });
       get().setWishlist(response.data);
-      toast.success("Removed from wishlist");
+      showToast.success(
+        "Removed from Wishlist",
+        "Item has been removed from your wishlist."
+      );
       return { success: true };
     } catch (err) {
       console.error("Failed to remove from wishlist:", err);
       const errorMsg =
         err.response?.data?.message || "Failed to remove from wishlist";
-      toast.error(errorMsg);
+      showToast.error("Remove Failed", errorMsg);
       return {
         success: false,
         message: errorMsg,

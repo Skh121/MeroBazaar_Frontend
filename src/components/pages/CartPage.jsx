@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Minus,
@@ -15,6 +15,12 @@ import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
 import { useCartStore } from "../../store/lib/cartStore";
 import { useTracking } from "../../hooks/useTracking";
+import {
+  shippingAddressSchema,
+  validateForm,
+  getFirstError,
+} from "../../utils/validationSchemas";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
@@ -57,6 +63,7 @@ const CartPage = () => {
 
   const [esewaPaymentData, setEsewaPaymentData] = React.useState(null);
   const esewaFormRef = useRef(null);
+  const [shippingErrors, setShippingErrors] = useState({});
 
   useEffect(() => {
     if (!token) {
@@ -82,7 +89,10 @@ const CartPage = () => {
   const handleUpdateQuantity = async (productId, newQuantity) => {
     const result = await updateQuantity(token, productId, newQuantity);
     if (!result.success) {
-      alert(result.message);
+      showToast.error(
+        "Update Failed",
+        result.message || "Failed to update quantity"
+      );
     }
   };
 
@@ -129,13 +139,40 @@ const CartPage = () => {
       }
     } catch (err) {
       console.error("Failed to place order:", err);
-      alert(err.response?.data?.message || "Failed to place order");
+      showToast.error(
+        "Order Failed",
+        err.response?.data?.message || "Failed to place order"
+      );
       setPlacingOrder(false);
     }
   };
 
   const handleShippingChange = (field, value) => {
+    // Clear error for this field when user types
+    if (shippingErrors[field]) {
+      setShippingErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
     setShippingAddress({ ...shippingAddress, [field]: value });
+  };
+
+  const validateShipping = () => {
+    const validation = validateForm(shippingAddressSchema, shippingAddress);
+    if (!validation.success) {
+      setShippingErrors(validation.errors);
+      return false;
+    }
+    setShippingErrors({});
+    return true;
+  };
+
+  const handleContinueToPayment = () => {
+    if (validateShipping()) {
+      setStep(3);
+    }
   };
 
   // Calculate totals using store method
@@ -313,7 +350,7 @@ const CartPage = () => {
 
                             {/* Item Total */}
                             <p className="font-semibold text-gray-800">
-                              Rs.{item.price * item.quantity}
+                              Rs.{(item.price * item.quantity).toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -331,7 +368,9 @@ const CartPage = () => {
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Subtotal</span>
-                          <span className="font-medium">Rs.{subtotal}</span>
+                          <span className="font-medium">
+                            Rs.{subtotal.toFixed(2)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Shipping</span>
@@ -342,17 +381,21 @@ const CartPage = () => {
                                 : "font-medium"
                             }
                           >
-                            {shipping === 0 ? "FREE" : `Rs.${shipping}`}
+                            {shipping === 0
+                              ? "FREE"
+                              : `Rs.${shipping.toFixed(2)}`}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Tax (5%)</span>
-                          <span className="font-medium">Rs.{tax}</span>
+                          <span className="font-medium">
+                            Rs.{tax.toFixed(2)}
+                          </span>
                         </div>
                         <div className="border-t pt-3 flex justify-between">
                           <span className="font-semibold">Total</span>
                           <span className="font-bold text-merogreen text-lg">
-                            Rs.{total}
+                            Rs.{total.toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -385,10 +428,17 @@ const CartPage = () => {
                   Shipping Address
                 </h2>
 
+                {/* Shipping form error summary */}
+                {Object.keys(shippingErrors).length > 0 && (
+                  <div className="p-3 mb-4 text-sm font-medium text-red-800 bg-red-100 rounded-lg">
+                    Please fix the errors below to continue
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name
+                      Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -396,15 +446,24 @@ const CartPage = () => {
                       onChange={(e) =>
                         handleShippingChange("fullName", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                        shippingErrors.fullName
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                       placeholder="John Doe"
                     />
+                    {shippingErrors.fullName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {shippingErrors.fullName}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
+                        Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -412,13 +471,22 @@ const CartPage = () => {
                         onChange={(e) =>
                           handleShippingChange("email", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                          shippingErrors.email
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         placeholder="john@example.com"
                       />
+                      {shippingErrors.email && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {shippingErrors.email}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone
+                        Phone <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="tel"
@@ -426,15 +494,24 @@ const CartPage = () => {
                         onChange={(e) =>
                           handleShippingChange("phone", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                          shippingErrors.phone
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         placeholder="+977 9800000000"
                       />
+                      {shippingErrors.phone && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {shippingErrors.phone}
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address
+                      Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -442,15 +519,24 @@ const CartPage = () => {
                       onChange={(e) =>
                         handleShippingChange("address", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                        shippingErrors.address
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                       placeholder="Street address"
                     />
+                    {shippingErrors.address && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {shippingErrors.address}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        City
+                        City <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -458,13 +544,22 @@ const CartPage = () => {
                         onChange={(e) =>
                           handleShippingChange("city", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                          shippingErrors.city
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         placeholder="Kathmandu"
                       />
+                      {shippingErrors.city && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {shippingErrors.city}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Postal Code
+                        Postal Code <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -472,9 +567,18 @@ const CartPage = () => {
                         onChange={(e) =>
                           handleShippingChange("postalCode", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-merogreen focus:border-transparent ${
+                          shippingErrors.postalCode
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         placeholder="44600"
                       />
+                      {shippingErrors.postalCode && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {shippingErrors.postalCode}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -487,16 +591,8 @@ const CartPage = () => {
                     Back
                   </button>
                   <button
-                    onClick={() => setStep(3)}
-                    disabled={
-                      !shippingAddress.fullName ||
-                      !shippingAddress.email ||
-                      !shippingAddress.phone ||
-                      !shippingAddress.address ||
-                      !shippingAddress.city ||
-                      !shippingAddress.postalCode
-                    }
-                    className="flex-1 py-3 bg-merogreen text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleContinueToPayment}
+                    className="flex-1 py-3 bg-merogreen text-white rounded-lg font-semibold hover:bg-green-700 transition"
                   >
                     Continue to Payment
                   </button>
@@ -571,7 +667,9 @@ const CartPage = () => {
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">Rs.{subtotal}</span>
+                      <span className="font-medium">
+                        Rs.{subtotal.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Shipping</span>
@@ -582,17 +680,17 @@ const CartPage = () => {
                             : "font-medium"
                         }
                       >
-                        {shipping === 0 ? "FREE" : `Rs.${shipping}`}
+                        {shipping === 0 ? "FREE" : `Rs.${shipping.toFixed(2)}`}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tax (5%)</span>
-                      <span className="font-medium">Rs.{tax}</span>
+                      <span className="font-medium">Rs.{tax.toFixed(2)}</span>
                     </div>
                     <div className="border-t pt-3 flex justify-between">
                       <span className="font-semibold">Total</span>
                       <span className="font-bold text-merogreen text-lg">
-                        Rs.{total}
+                        Rs.{total.toFixed(2)}
                       </span>
                     </div>
                   </div>

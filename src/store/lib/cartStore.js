@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
-import toast from "react-hot-toast";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -85,7 +85,10 @@ export const useCartStore = create(
 
       addToCart: async (token, productId, quantity = 1) => {
         if (!token) {
-          toast.error("Please login first");
+          showToast.error(
+            "Login Required",
+            "Please login to add items to cart."
+          );
           return { success: false, message: "Please login first" };
         }
         try {
@@ -96,13 +99,16 @@ export const useCartStore = create(
             { headers: { Authorization: `Bearer ${token}` } }
           );
           get().setCart(response.data);
-          toast.success("Added to cart!");
+          showToast.success(
+            "Added to Cart!",
+            "Item has been added to your cart."
+          );
           return { success: true };
         } catch (err) {
           console.error("Failed to add to cart:", err);
           const errorMsg =
             err.response?.data?.message || "Failed to add to cart";
-          toast.error(errorMsg);
+          showToast.error("Cart Error", errorMsg);
           return {
             success: false,
             message: errorMsg,
@@ -127,7 +133,7 @@ export const useCartStore = create(
           console.error("Failed to update quantity:", err);
           const errorMsg =
             err.response?.data?.message || "Failed to update quantity";
-          toast.error(errorMsg);
+          showToast.error("Update Failed", errorMsg);
           return {
             success: false,
             message: errorMsg,
@@ -146,10 +152,13 @@ export const useCartStore = create(
             { headers: { Authorization: `Bearer ${token}` } }
           );
           get().setCart(response.data);
-          toast.success("Item removed from cart");
+          showToast.success(
+            "Item Removed",
+            "Item has been removed from your cart."
+          );
         } catch (err) {
           console.error("Failed to remove item:", err);
-          toast.error("Failed to remove item");
+          showToast.error("Remove Failed", "Unable to remove item from cart.");
         } finally {
           set({ updating: false });
         }
@@ -195,9 +204,14 @@ export const useCartStore = create(
             0
           ) || 0;
         const shipping = subtotal >= 1000 ? 0 : 100;
-        const tax = Math.round(subtotal * 0.05);
-        const total = subtotal + shipping + tax;
-        return { subtotal, shipping, tax, total };
+        const tax = Math.round(subtotal * 0.05 * 100) / 100; // Round to 2 decimal places
+        const total = Math.round((subtotal + shipping + tax) * 100) / 100; // Round to 2 decimal places
+        return {
+          subtotal: Math.round(subtotal * 100) / 100,
+          shipping,
+          tax,
+          total,
+        };
       },
     }),
     {

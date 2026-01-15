@@ -10,8 +10,6 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
-  Search,
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
@@ -184,22 +182,10 @@ const AdminLayout = ({ children, title, subtitle }) => {
             >
               <Menu size={20} />
             </button>
-            <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-transparent border-none outline-none ml-2 w-64 text-sm"
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+            <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-merogreen rounded-full flex items-center justify-center text-white font-medium">
                 {user?.fullName?.charAt(0) || "A"}
               </div>
