@@ -6,6 +6,7 @@ import Footer from "../layout/Footer";
 import { useAuthStore } from "../../store/lib/authStore";
 import { useWishlistStore } from "../../store/lib/wishlistStore";
 import { useCartStore } from "../../store/lib/cartStore";
+import showToast from "../../utils/customToast";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = API_URL?.replace("/api", "") || "http://localhost:5000";
@@ -61,11 +62,7 @@ const WishlistPage = () => {
   const handleAddToCart = async (productId) => {
     setAddingToCart(productId);
     const result = await addToCart(token, productId, 1);
-    if (result.success) {
-      alert("Added to cart!");
-    } else {
-      alert(result.message);
-    }
+    // Toast is handled by cartStore
     setAddingToCart(null);
   };
 

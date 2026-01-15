@@ -5,6 +5,11 @@ import { useSignup } from "../../../hooks/useAuth";
 import GoogleLoginButton from "../../shared/GoogleLoginButton";
 import SignupLogo from "../../../assets/images/SignupLogo.svg";
 import SignupImage from "../../../assets/images/signup.png";
+import {
+  signupSchema,
+  validateForm,
+  getFirstError,
+} from "../../../utils/validationSchemas";
 
 const SignupPage = () => {
   const [fullName, setFullName] = useState("");
@@ -15,23 +20,38 @@ const SignupPage = () => {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [localError, setLocalError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
 
   const navigate = useNavigate();
   const { mutate: signup, isPending, error } = useSignup();
+
+  const clearFieldError = (field) => {
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLocalError("");
 
-    if (password !== confirmPassword) {
-      setLocalError("Passwords do not match.");
-      return;
-    }
+    // Validate with Zod
+    const validation = validateForm(signupSchema, {
+      fullName,
+      email,
+      password,
+      confirmPassword,
+      agreed,
+    });
 
-    if (!agreed) {
-      setLocalError(
-        "You must agree to the Terms of Service and Privacy Policy."
-      );
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      const firstError = getFirstError(validation.errors);
+      setLocalError(firstError);
       return;
     }
 
@@ -39,9 +59,7 @@ const SignupPage = () => {
       { fullName, email, password },
       {
         onSuccess: (data) => {
-          navigate(
-            data.role === "admin" ? "/admin/dashboard" : "/customer/home"
-          );
+          navigate(data.role === "admin" ? "/admin/dashboard" : "/login");
         },
       }
     );
@@ -74,7 +92,8 @@ const SignupPage = () => {
             <img
               src={SignupLogo}
               alt="MeroBazaar Logo"
-              className="h-10 drop-shadow-md"
+              className="h-10 drop-shadow-md cursor-pointer"
+              onClick={() => navigate("/")}
             />
           </div>
 
@@ -113,16 +132,7 @@ const SignupPage = () => {
       {/* RIGHT FORM */}
       <div className="w-full md:w-1/2 flex items-center justify-center px-8 lg:px-16 xl:px-24">
         <div className="w-full max-w-[420px]">
-          <h2 className="text-2xl font-semibold mb-1">Create Account</h2>
-          <p className="text-gray-500 mb-6">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-merogreen font-medium hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
+          <h2 className="text-2xl font-semibold mb-2">Create Account</h2>
 
           {/* Error & Loading */}
           {displayError && (
@@ -148,12 +158,22 @@ const SignupPage = () => {
                   type="text"
                   placeholder="John Doe"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    clearFieldError("fullName");
+                  }}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.fullName ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
               </div>
+              {formErrors.fullName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.fullName}
+                </p>
+              )}
             </div>
 
             {/* Email Field */}
@@ -167,12 +187,20 @@ const SignupPage = () => {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    clearFieldError("email");
+                  }}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
               </div>
+              {formErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -186,10 +214,15 @@ const SignupPage = () => {
                   type={showPass ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    clearFieldError("password");
+                  }}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-12 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
                 <button
                   type="button"
@@ -199,6 +232,11 @@ const SignupPage = () => {
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {formErrors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.password}
+                </p>
+              )}
             </div>
 
             {/* Confirm Password Field */}
@@ -212,10 +250,17 @@ const SignupPage = () => {
                   type={showConfirmPass ? "text" : "password"}
                   placeholder="••••••••"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    clearFieldError("confirmPassword");
+                  }}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-12 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                 />
                 <button
                   type="button"
@@ -225,6 +270,11 @@ const SignupPage = () => {
                   {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {formErrors.confirmPassword && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.confirmPassword}
+                </p>
+              )}
             </div>
 
             {/* Terms Checkbox */}
@@ -269,7 +319,7 @@ const SignupPage = () => {
             </button>
 
             {/* Divider */}
-            <div className="flex items-center my-4">
+            <div className="flex items-center mb-2">
               <div className="flex-1 border-t border-gray-300"></div>
               <span className="px-4 text-sm text-gray-500">or</span>
               <div className="flex-1 border-t border-gray-300"></div>
@@ -278,6 +328,15 @@ const SignupPage = () => {
             {/* Google Signup */}
             <GoogleLoginButton />
           </form>
+          <p className="text-gray-500 mb-6 text-center my-6">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-merogreen font-medium hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

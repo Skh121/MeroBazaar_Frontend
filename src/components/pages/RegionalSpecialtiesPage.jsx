@@ -55,9 +55,15 @@ const RegionalSpecialtiesPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page")) || 1);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [activeProvince, setActiveProvince] = useState(searchParams.get("province") || "all");
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get("page")) || 1
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [activeProvince, setActiveProvince] = useState(
+    searchParams.get("province") || "all"
+  );
   const [addingToCart, setAddingToCart] = useState(null);
   const [togglingWishlist, setTogglingWishlist] = useState(null);
   const [insights, setInsights] = useState({
@@ -100,13 +106,18 @@ const RegionalSpecialtiesPage = () => {
       }
 
       // Fetch regional products from API (now properly filtered by province on backend)
-      const response = await axios.get(`${API_URL}/products/regional?${params.toString()}`);
+      const response = await axios.get(
+        `${API_URL}/products/regional?${params.toString()}`
+      );
       let fetchedProducts = response.data || [];
 
       // If no products found for the selected province, try getting all products and filter
       if (fetchedProducts.length === 0 && activeProvince !== "all") {
-        const allProductsResponse = await axios.get(`${API_URL}/products?limit=100`);
-        const allProducts = allProductsResponse.data.products || allProductsResponse.data || [];
+        const allProductsResponse = await axios.get(
+          `${API_URL}/products?limit=100`
+        );
+        const allProducts =
+          allProductsResponse.data.products || allProductsResponse.data || [];
 
         // Filter by province based on vendor's province
         fetchedProducts = allProducts.filter(
@@ -115,13 +126,21 @@ const RegionalSpecialtiesPage = () => {
       }
 
       // If still showing all provinces and need more products
-      if (activeProvince === "all" && fetchedProducts.length < PRODUCTS_PER_PAGE) {
-        const allProductsResponse = await axios.get(`${API_URL}/products?limit=50`);
-        const allProducts = allProductsResponse.data.products || allProductsResponse.data || [];
+      if (
+        activeProvince === "all" &&
+        fetchedProducts.length < PRODUCTS_PER_PAGE
+      ) {
+        const allProductsResponse = await axios.get(
+          `${API_URL}/products?limit=50`
+        );
+        const allProducts =
+          allProductsResponse.data.products || allProductsResponse.data || [];
 
         // Merge and dedupe
         const existingIds = new Set(fetchedProducts.map((p) => p._id));
-        const additionalProducts = allProducts.filter((p) => !existingIds.has(p._id));
+        const additionalProducts = allProducts.filter(
+          (p) => !existingIds.has(p._id)
+        );
         fetchedProducts = [...fetchedProducts, ...additionalProducts];
       }
 
@@ -142,7 +161,10 @@ const RegionalSpecialtiesPage = () => {
 
       // Paginate
       const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-      const paginatedProducts = fetchedProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+      const paginatedProducts = fetchedProducts.slice(
+        startIndex,
+        startIndex + PRODUCTS_PER_PAGE
+      );
 
       setProducts(paginatedProducts);
       setTotalProducts(fetchedProducts.length);
@@ -169,19 +191,38 @@ const RegionalSpecialtiesPage = () => {
     }
 
     // Most popular by rating
-    const sortedByRating = [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    const sortedByRating = [...products].sort(
+      (a, b) => (b.rating || 0) - (a.rating || 0)
+    );
     const mostPopular = sortedByRating[0];
 
     // Trending - has badge or high review count
-    const trending = products.find((p) => p.badge === "Best Seller" || (p.reviewCount || 0) > 10);
+    const trending = products.find(
+      (p) => p.badge === "Best Seller" || (p.reviewCount || 0) > 10
+    );
 
     // High demand - random selection for demo
-    const highDemand = products.find((p) => p.badge === "Limited" || p.stock < 20) || products[Math.floor(Math.random() * products.length)];
+    const highDemand =
+      products.find((p) => p.badge === "Limited" || p.stock < 20) ||
+      products[Math.floor(Math.random() * products.length)];
 
     setInsights({
-      mostPopular: mostPopular ? `${mostPopular.vendor?.district || "Nepal"} ${mostPopular.name.split(" ").slice(0, 2).join(" ")}` : null,
-      trending: trending ? `${trending.vendor?.district || "Local"} ${trending.category || "Products"}` : null,
-      highDemand: highDemand ? `${highDemand.vendor?.district || "Nepal"} ${highDemand.name.split(" ")[0]}` : null,
+      mostPopular: mostPopular
+        ? `${mostPopular.vendor?.district || "Nepal"} ${mostPopular.name
+            .split(" ")
+            .slice(0, 2)
+            .join(" ")}`
+        : null,
+      trending: trending
+        ? `${trending.vendor?.district || "Local"} ${
+            trending.category || "Products"
+          }`
+        : null,
+      highDemand: highDemand
+        ? `${highDemand.vendor?.district || "Nepal"} ${
+            highDemand.name.split(" ")[0]
+          }`
+        : null,
     });
   };
 
@@ -273,7 +314,8 @@ const RegionalSpecialtiesPage = () => {
 
   // Regional Product Card
   const RegionalProductCard = ({ product }) => {
-    const isTrending = product.badge === "Best Seller" || (product.reviewCount || 0) > 5;
+    const isTrending =
+      product.badge === "Best Seller" || (product.reviewCount || 0) > 5;
 
     return (
       <div
@@ -331,7 +373,9 @@ const RegionalSpecialtiesPage = () => {
         {/* Content */}
         <div className="p-4">
           {/* Product Name */}
-          <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
+          <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">
+            {product.name}
+          </h3>
 
           {/* Description */}
           <p className="text-xs text-gray-500 mb-2 line-clamp-2">
@@ -391,7 +435,9 @@ const RegionalSpecialtiesPage = () => {
             <h1 className="text-2xl font-semibold text-gray-900 mb-2">
               Regional Specialties of Nepal
             </h1>
-            <p className="text-gray-500">Discover authentic products from every district</p>
+            <p className="text-gray-500">
+              Discover authentic products from every district
+            </p>
           </div>
 
           {/* Search Bar */}
@@ -431,30 +477,44 @@ const RegionalSpecialtiesPage = () => {
           </div>
 
           {/* Regional Insights */}
-          {(insights.mostPopular || insights.trending || insights.highDemand) && (
+          {(insights.mostPopular ||
+            insights.trending ||
+            insights.highDemand) && (
             <div className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4 mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={18} className="text-merogreen" />
-                <span className="font-medium text-gray-800">Regional Insights</span>
+                <span className="font-medium text-gray-800">
+                  Regional Insights
+                </span>
               </div>
               <p className="text-sm text-gray-600">
                 {insights.mostPopular && (
                   <span>
-                    Most popular: <span className="font-medium text-gray-800">{insights.mostPopular}</span>
+                    Most popular:{" "}
+                    <span className="font-medium text-gray-800">
+                      {insights.mostPopular}
+                    </span>
                   </span>
                 )}
-                {insights.mostPopular && insights.trending && <span className="mx-2">•</span>}
-                {insights.trending && (
-                  <span>
-                    Trending: <span className="font-medium text-gray-800">{insights.trending}</span>
-                  </span>
-                )}
-                {(insights.mostPopular || insights.trending) && insights.highDemand && (
+                {insights.mostPopular && insights.trending && (
                   <span className="mx-2">•</span>
                 )}
+                {insights.trending && (
+                  <span>
+                    Trending:{" "}
+                    <span className="font-medium text-gray-800">
+                      {insights.trending}
+                    </span>
+                  </span>
+                )}
+                {(insights.mostPopular || insights.trending) &&
+                  insights.highDemand && <span className="mx-2">•</span>}
                 {insights.highDemand && (
                   <span>
-                    High Demand: <span className="font-medium text-gray-800">{insights.highDemand}</span>
+                    High Demand:{" "}
+                    <span className="font-medium text-gray-800">
+                      {insights.highDemand}
+                    </span>
                   </span>
                 )}
               </p>
@@ -475,14 +535,21 @@ const RegionalSpecialtiesPage = () => {
                     {/* District Header */}
                     <div className="flex items-center gap-2 mb-4">
                       <MapPin size={18} className="text-merogreen" />
-                      <h2 className="font-semibold text-gray-900">{group.district}</h2>
-                      <span className="text-sm text-gray-500">({group.province})</span>
+                      <h2 className="font-semibold text-gray-900">
+                        {group.district}
+                      </h2>
+                      <span className="text-sm text-gray-500">
+                        ({group.province})
+                      </span>
                     </div>
 
                     {/* Products Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {group.products.map((product) => (
-                        <RegionalProductCard key={product._id} product={product} />
+                        <RegionalProductCard
+                          key={product._id}
+                          product={product}
+                        />
                       ))}
                     </div>
                   </div>
@@ -494,8 +561,8 @@ const RegionalSpecialtiesPage = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t">
                   <p className="text-sm text-gray-500">
                     Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1} to{" "}
-                    {Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)} of {totalProducts}{" "}
-                    results
+                    {Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)}{" "}
+                    of {totalProducts} results
                   </p>
 
                   <div className="flex items-center gap-2">
@@ -510,7 +577,9 @@ const RegionalSpecialtiesPage = () => {
                     {getPageNumbers().map((page, index) => (
                       <button
                         key={index}
-                        onClick={() => typeof page === "number" && handlePageChange(page)}
+                        onClick={() =>
+                          typeof page === "number" && handlePageChange(page)
+                        }
                         disabled={page === "..."}
                         className={`min-w-9 h-9 rounded-lg text-sm font-medium transition ${
                           page === currentPage
@@ -538,11 +607,17 @@ const RegionalSpecialtiesPage = () => {
           ) : (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <MapPin size={64} className="text-gray-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">No products found</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                No products found
+              </h2>
               <p className="text-gray-500 mb-6">
                 {searchQuery
-                  ? `No products match "${searchQuery}" in ${activeProvince === "all" ? "any province" : activeProvince}`
-                  : `No regional specialties available ${activeProvince !== "all" ? `in ${activeProvince}` : ""} yet`}
+                  ? `No products match "${searchQuery}" in ${
+                      activeProvince === "all" ? "any province" : activeProvince
+                    }`
+                  : `No regional specialties available ${
+                      activeProvince !== "all" ? `in ${activeProvince}` : ""
+                    } yet`}
               </p>
               <button
                 onClick={() => {

@@ -5,18 +5,41 @@ import { useLogin } from "../../../hooks/useAuth";
 import GoogleLoginButton from "../../shared/GoogleLoginButton";
 import LoginImage from "../../../assets/images/login.png";
 import LoginLogo from "../../../assets/images/LoginLogo.svg";
+import { loginSchema, validateForm } from "../../../utils/validationSchemas";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const navigate = useNavigate();
   const { mutate: login, isPending, error } = useLogin();
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (formErrors.email) {
+      setFormErrors((prev) => ({ ...prev, email: null }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (formErrors.password) {
+      setFormErrors((prev) => ({ ...prev, password: null }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate with Zod
+    const validation = validateForm(loginSchema, { email, password });
+    if (!validation.success) {
+      setFormErrors(validation.errors);
+      return;
+    }
 
     login(
       { email, password },
@@ -52,7 +75,8 @@ const LoginPage = () => {
             <img
               src={LoginLogo}
               alt="MeroBazaar Logo"
-              className="h-10 drop-shadow-md"
+              className="h-10 drop-shadow-md cursor-pointer"
+              onClick={() => navigate("/")}
             />
           </div>
 
@@ -93,17 +117,7 @@ const LoginPage = () => {
       {/* RIGHT FORM */}
       <div className="w-full md:w-1/2 flex items-center justify-center px-8 lg:px-16 xl:px-24">
         <div className="w-full max-w-[420px]">
-          <h2 className="text-2xl font-semibold mb-1">Sign In</h2>
-          <p className="text-gray-500 mb-8">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-merogreen font-medium hover:underline"
-            >
-              Create one
-            </Link>
-          </p>
-
+          <h2 className="text-2xl font-semibold mb-2">Sign In</h2>
           {error && (
             <div className="p-3 mb-4 text-sm font-medium text-red-800 bg-red-100 rounded-lg">
               {error.response?.data?.message || "Login failed"}
@@ -122,12 +136,17 @@ const LoginPage = () => {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
               </div>
+              {formErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -141,10 +160,12 @@ const LoginPage = () => {
                   type={showPass ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   autoComplete="off"
                   required
-                  className="w-full pl-10 pr-12 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm"
+                  className={`w-full pl-10 pr-12 py-2.5 rounded-lg border focus:ring-2 focus:ring-merogreen focus:border-transparent focus:outline-none text-sm ${
+                    formErrors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
                 <button
                   type="button"
@@ -154,6 +175,11 @@ const LoginPage = () => {
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {formErrors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.password}
+                </p>
+              )}
             </div>
 
             {/* Remember Me & Forgot Password */}
@@ -190,7 +216,7 @@ const LoginPage = () => {
             </button>
 
             {/* Divider */}
-            <div className="flex items-center my-4">
+            <div className="flex items-center mb-2">
               <div className="flex-1 border-t border-gray-300"></div>
               <span className="px-4 text-sm text-gray-500">or</span>
               <div className="flex-1 border-t border-gray-300"></div>
@@ -198,6 +224,16 @@ const LoginPage = () => {
 
             {/* Google Login */}
             <GoogleLoginButton />
+
+            <p className="text-gray-500 mb-8 text-center my-6">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-merogreen font-medium hover:underline"
+              >
+                Create one
+              </Link>
+            </p>
           </form>
         </div>
       </div>

@@ -86,9 +86,12 @@ const RecommendationsPage = () => {
             });
           } else {
             // Guest - get trending as fallback for "For You"
-            response = await axios.get(`${API_URL}/analytics/recommendations/trending`, {
-              params: { limit: 12 },
-            });
+            response = await axios.get(
+              `${API_URL}/analytics/recommendations/trending`,
+              {
+                params: { limit: 12 },
+              }
+            );
           }
 
           if (response.data.success && response.data.recommendations) {
@@ -102,9 +105,12 @@ const RecommendationsPage = () => {
 
         case "trending":
           // Public endpoint - works for both logged in and guests
-          response = await axios.get(`${API_URL}/analytics/recommendations/trending`, {
-            params: { limit: 12 },
-          });
+          response = await axios.get(
+            `${API_URL}/analytics/recommendations/trending`,
+            {
+              params: { limit: 12 },
+            }
+          );
 
           if (response.data.success && response.data.recommendations) {
             const products = response.data.recommendations.map((rec) => ({
@@ -117,9 +123,12 @@ const RecommendationsPage = () => {
 
         case "seasonal":
           // Public endpoint - works for both logged in and guests
-          response = await axios.get(`${API_URL}/analytics/recommendations/seasonal`, {
-            params: { limit: 12 },
-          });
+          response = await axios.get(
+            `${API_URL}/analytics/recommendations/seasonal`,
+            {
+              params: { limit: 12 },
+            }
+          );
 
           if (response.data.success && response.data.recommendations) {
             const season = response.data.season || "Winter";
@@ -137,21 +146,29 @@ const RecommendationsPage = () => {
 
       // Fallback to products API if analytics fails
       try {
-        const fallbackResponse = await axios.get(`${API_URL}/products?limit=12`);
-        const products = fallbackResponse.data.products || fallbackResponse.data || [];
+        const fallbackResponse = await axios.get(
+          `${API_URL}/products?limit=12`
+        );
+        const products =
+          fallbackResponse.data.products || fallbackResponse.data || [];
 
         if (tab === "forYou") {
           setForYouProducts(
             products.map((p, i) => ({
               ...p,
-              recommendationReason: ["Based on your interest", "Popular choice", "Recommended"][
-                i % 3
-              ],
+              recommendationReason: [
+                "Based on your interest",
+                "Popular choice",
+                "Recommended",
+              ][i % 3],
             }))
           );
         } else if (tab === "trending") {
           setTrendingProducts(
-            products.map((p) => ({ ...p, recommendationReason: "Recently trending" }))
+            products.map((p) => ({
+              ...p,
+              recommendationReason: "Recently trending",
+            }))
           );
         } else if (tab === "seasonal") {
           const month = new Date().getMonth();
@@ -160,7 +177,9 @@ const RecommendationsPage = () => {
           else if (month >= 5 && month <= 7) season = "Summer";
           else if (month >= 8 && month <= 10) season = "Autumn";
           setCurrentSeason(season);
-          setSeasonalProducts(products.map((p) => ({ ...p, seasonBadge: season })));
+          setSeasonalProducts(
+            products.map((p) => ({ ...p, seasonBadge: season }))
+          );
         }
       } catch (fallbackError) {
         console.error("Fallback also failed:", fallbackError);
@@ -261,16 +280,22 @@ const RecommendationsPage = () => {
       <div className="p-4">
         {/* Recommendation Reason Tag */}
         {product.recommendationReason && (
-          <p className="text-xs text-gray-500 mb-1">{product.recommendationReason}</p>
+          <p className="text-xs text-gray-500 mb-1">
+            {product.recommendationReason}
+          </p>
         )}
 
         {/* Product Name */}
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-1">{product.name}</h3>
+        <h3 className="font-medium text-gray-900 mb-2 line-clamp-1">
+          {product.name}
+        </h3>
 
         {/* Rating */}
         <div className="flex items-center gap-1 mb-2">
           <Star size={14} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-sm text-gray-600">{product.rating?.toFixed(1) || "4.5"}</span>
+          <span className="text-sm text-gray-600">
+            {product.rating?.toFixed(1) || "4.5"}
+          </span>
         </div>
 
         {/* Price */}
@@ -326,12 +351,16 @@ const RecommendationsPage = () => {
         )}
 
         {/* Product Name */}
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-1">{product.name}</h3>
+        <h3 className="font-medium text-gray-900 mb-2 line-clamp-1">
+          {product.name}
+        </h3>
 
         {/* Rating */}
         <div className="flex items-center gap-1 mb-2">
           <Star size={14} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-sm text-gray-600">{product.rating?.toFixed(1) || "4.5"}</span>
+          <span className="text-sm text-gray-600">
+            {product.rating?.toFixed(1) || "4.5"}
+          </span>
         </div>
 
         {/* Price */}
@@ -366,7 +395,9 @@ const RecommendationsPage = () => {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-medium text-gray-900 mb-2">Your Recommendations</h1>
+            <h1 className="text-3xl font-medium text-gray-900 mb-2">
+              Your Recommendations
+            </h1>
             <p className="text-gray-500">
               {user
                 ? "Personalized suggestions based on your browsing and purchase history"
@@ -382,7 +413,9 @@ const RecommendationsPage = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`pb-3 text-sm font-medium transition-colors relative ${
-                    activeTab === tab.id ? "text-merogreen" : "text-gray-500 hover:text-gray-700"
+                    activeTab === tab.id
+                      ? "text-merogreen"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {tab.label}
@@ -400,8 +433,8 @@ const RecommendationsPage = () => {
               <div className="flex items-center gap-3">
                 <Sparkles className="text-merogreen" size={24} />
                 <p className="text-gray-700">
-                  <span className="font-medium">Sign in</span> to get personalized recommendations
-                  based on your browsing history
+                  <span className="font-medium">Sign in</span> to get
+                  personalized recommendations based on your browsing history
                 </p>
               </div>
               <button
@@ -431,7 +464,9 @@ const RecommendationsPage = () => {
           ) : (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <Package size={64} className="text-gray-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">No recommendations yet</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                No recommendations yet
+              </h2>
               <p className="text-gray-500 mb-6">
                 {!user
                   ? "Sign in to get personalized recommendations based on your preferences"
