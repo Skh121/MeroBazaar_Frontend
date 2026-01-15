@@ -190,3 +190,34 @@ export const getVendorPricingSuggestions = async (token) => {
   );
   return response.data;
 };
+
+// ============ ADMIN ANALYTICS (Dynamic from Orders) ============
+
+export const getAdminDashboardStats = async (token, days = 7) => {
+  const response = await axios.get(`${API_URL}/analytics/admin/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { days },
+  });
+  return response.data;
+};
+
+export const getAdminCustomerSegments = async (token) => {
+  const response = await axios.get(`${API_URL}/analytics/admin/segments`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const getAdminDemandForecasts = async (token) => {
+  const response = await axios.get(`${API_URL}/analytics/admin/forecasts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const getAdminPricingSuggestions = async (token) => {
+  const response = await axios.get(`${API_URL}/analytics/admin/pricing`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};

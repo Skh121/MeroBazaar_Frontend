@@ -1,43 +1,50 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  BarChart3,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  BarChart as RechartsBar,
+  Bar,
+  Legend,
+} from "recharts";
+import {
   Users,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Package,
-  Eye,
   ShoppingCart,
   RefreshCw,
   Loader2,
   ChevronRight,
-  PieChart as PieChartIcon,
-  Activity,
+  Store,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 import AdminLayout from "../../../layout/AdminLayout";
 import { useAuthStore } from "../../../../store/lib/authStore";
 import {
-  getDashboardAnalytics,
-  getCustomerSegments,
-  recalculateSegments,
+  getAdminDashboardStats,
+  getAdminCustomerSegments,
 } from "../../../../store/api/analyticsApi";
-import {
-  BarChart,
-  LineChart,
-  PieChart,
-  DonutChart,
-  FunnelChart,
-} from "../../../shared/Charts";
 
 const AnalyticsDashboard = () => {
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [analytics, setAnalytics] = useState(null);
+  const [stats, setStats] = useState(null);
   const [segments, setSegments] = useState(null);
   const [error, setError] = useState(null);
+  const [chartPeriod, setChartPeriod] = useState(7);
 
   useEffect(() => {
     if (!token || user?.role !== "admin") {
@@ -45,19 +52,19 @@ const AnalyticsDashboard = () => {
       return;
     }
     fetchData();
-  }, [token, user, navigate]);
+  }, [token, user, navigate, chartPeriod]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [analyticsData, segmentsData] = await Promise.all([
-        getDashboardAnalytics(token),
-        getCustomerSegments(token, { limit: 100 }),
+      const [statsData, segmentsData] = await Promise.all([
+        getAdminDashboardStats(token, chartPeriod),
+        getAdminCustomerSegments(token),
       ]);
 
-      setAnalytics(analyticsData);
+      setStats(statsData);
       setSegments(segmentsData);
     } catch (err) {
       console.error("Failed to fetch analytics:", err);
@@ -67,90 +74,44 @@ const AnalyticsDashboard = () => {
     }
   };
 
-  const handleRefreshSegments = async () => {
-    try {
-      setRefreshing(true);
-      await recalculateSegments(token);
-      await fetchData();
-    } catch (err) {
-      console.error("Failed to refresh segments:", err);
-    } finally {
-      setRefreshing(false);
+  const formatCurrency = (value) => {
+    if (value >= 100000) {
+      return `Rs.${(value / 100000).toFixed(1)}L`;
+    } else if (value >= 1000) {
+      return `Rs.${(value / 1000).toFixed(1)}K`;
     }
+    return `Rs.${value?.toFixed(0) || 0}`;
   };
 
-  // Process data for charts
-  const eventCountsData =
-    analytics?.eventCounts?.map((e) => ({
-      name: e._id?.replaceAll("_", " ") || "Unknown",
-      count: e.count,
-    })) || [];
-
-  const dailyTrendsData = analytics?.dailyTrends?.reduce((acc, item) => {
-    const date = item._id?.date;
-    if (!acc[date]) {
-      acc[date] = { date, views: 0, cart_adds: 0, purchases: 0 };
-    }
-    if (item._id?.eventType === "view") acc[date].views = item.count;
-    if (item._id?.eventType === "add_to_cart") acc[date].cart_adds = item.count;
-    if (item._id?.eventType === "purchase") acc[date].purchases = item.count;
-    return acc;
-  }, {});
-
-  const trendsArray = Object.values(dailyTrendsData || {}).slice(-14);
-
-  const segmentDistData =
-    segments?.distribution?.map((s) => ({
-      name: s._id || "Unknown",
-      count: s.count,
-    })) || [];
-
-  const funnelData = analytics?.conversionFunnel
-    ? [
-        {
-          name: "Sessions",
-          value: analytics.conversionFunnel.totalSessions || 0,
-        },
-        {
-          name: "Viewed",
-          value: analytics.conversionFunnel.viewedSessions || 0,
-        },
-        {
-          name: "Added to Cart",
-          value: analytics.conversionFunnel.cartSessions || 0,
-        },
-        {
-          name: "Purchased",
-          value: analytics.conversionFunnel.purchaseSessions || 0,
-        },
-      ]
+  // Prepare segment data for pie chart
+  const segmentChartData = segments?.segments
+    ? Object.entries(segments.segments).map(([name, data]) => ({
+        name,
+        value: data.count,
+        color: segments.segmentColors?.[name] || "#6B7280",
+      }))
     : [];
 
-  // Calculate conversion rates
-  const viewToCartRate =
-    analytics?.conversionFunnel?.viewedSessions > 0
-      ? (
-          (analytics.conversionFunnel.cartSessions /
-            analytics.conversionFunnel.viewedSessions) *
-          100
-        ).toFixed(1)
-      : 0;
-
-  const cartToPurchaseRate =
-    analytics?.conversionFunnel?.cartSessions > 0
-      ? (
-          (analytics.conversionFunnel.purchaseSessions /
-            analytics.conversionFunnel.cartSessions) *
-          100
-        ).toFixed(1)
-      : 0;
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100">
+          <p className="text-sm font-medium text-gray-800">{label}</p>
+          <p className="text-sm text-merogreen">
+            Revenue: Rs.{payload[0]?.value?.toLocaleString()}
+          </p>
+          <p className="text-sm text-blue-500">
+            Orders: {payload[0]?.payload?.orders}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (loading) {
     return (
-      <AdminLayout
-        title="Analytics Dashboard"
-        subtitle="ML-powered insights and customer analytics"
-      >
+      <AdminLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 size={48} className="animate-spin text-merogreen" />
         </div>
@@ -167,17 +128,28 @@ const AnalyticsDashboard = () => {
             Analytics Dashboard
           </h1>
           <p className="text-gray-500 mt-1">
-            ML-powered insights and customer analytics
+            Platform-wide insights and performance metrics
           </p>
         </div>
-        <button
-          onClick={fetchData}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-merogreen text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
-        >
-          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-4">
+          <select
+            value={chartPeriod}
+            onChange={(e) => setChartPeriod(parseInt(e.target.value))}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-merogreen"
+          >
+            <option value={7}>Last 7 days</option>
+            <option value={14}>Last 14 days</option>
+            <option value={30}>Last 30 days</option>
+          </select>
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-merogreen text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+          >
+            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -191,30 +163,29 @@ const AnalyticsDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Total Sessions</p>
+              <p className="text-sm text-gray-500">Total Revenue</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics?.conversionFunnel?.totalSessions?.toLocaleString() ||
-                  0}
+                {formatCurrency(stats?.totalRevenue || 0)}
               </p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <Users size={24} className="text-blue-500" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Product Views</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {eventCountsData
-                  .find((e) => e.name === "view")
-                  ?.count?.toLocaleString() || 0}
-              </p>
+              <div className="flex items-center mt-1">
+                {stats?.revenueGrowth >= 0 ? (
+                  <ArrowUpRight size={16} className="text-green-500" />
+                ) : (
+                  <ArrowDownRight size={16} className="text-red-500" />
+                )}
+                <span
+                  className={`text-sm ${
+                    stats?.revenueGrowth >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {Math.abs(stats?.revenueGrowth || 0)}%
+                </span>
+              </div>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
-              <Eye size={24} className="text-green-500" />
+              <DollarSign size={24} className="text-green-500" />
             </div>
           </div>
         </div>
@@ -222,15 +193,27 @@ const AnalyticsDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Cart Additions</p>
+              <p className="text-sm text-gray-500">Total Orders</p>
               <p className="text-2xl font-bold text-gray-900">
-                {eventCountsData
-                  .find((e) => e.name === "add to cart")
-                  ?.count?.toLocaleString() || 0}
+                {stats?.totalOrders?.toLocaleString() || 0}
               </p>
+              <div className="flex items-center mt-1">
+                {stats?.ordersGrowth >= 0 ? (
+                  <ArrowUpRight size={16} className="text-green-500" />
+                ) : (
+                  <ArrowDownRight size={16} className="text-red-500" />
+                )}
+                <span
+                  className={`text-sm ${
+                    stats?.ordersGrowth >= 0 ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {Math.abs(stats?.ordersGrowth || 0)}%
+                </span>
+              </div>
             </div>
-            <div className="p-3 bg-yellow-50 rounded-lg">
-              <ShoppingCart size={24} className="text-yellow-500" />
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <ShoppingCart size={24} className="text-blue-500" />
             </div>
           </div>
         </div>
@@ -238,200 +221,236 @@ const AnalyticsDashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Purchases</p>
+              <p className="text-sm text-gray-500">Total Customers</p>
               <p className="text-2xl font-bold text-gray-900">
-                {eventCountsData
-                  .find((e) => e.name === "purchase")
-                  ?.count?.toLocaleString() || 0}
+                {stats?.totalCustomers?.toLocaleString() || 0}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                {segments?.totalCustomers || 0} with orders
               </p>
             </div>
             <div className="p-3 bg-purple-50 rounded-lg">
-              <DollarSign size={24} className="text-purple-500" />
+              <Users size={24} className="text-purple-500" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Active Vendors</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats?.totalVendors?.toLocaleString() || 0}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                {stats?.totalProducts || 0} products
+              </p>
+            </div>
+            <div className="p-3 bg-yellow-50 rounded-lg">
+              <Store size={24} className="text-yellow-500" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts Row 1 */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Event Distribution */}
+        {/* Revenue Chart */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Event Distribution</h3>
-            <BarChart3 size={20} className="text-gray-400" />
-          </div>
-          <BarChart
-            data={eventCountsData}
-            xKey="name"
-            yKey="count"
-            width={450}
-            height={250}
-            color="#10b981"
-          />
-        </div>
-
-        {/* Conversion Funnel */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Conversion Funnel</h3>
-            <Activity size={20} className="text-gray-400" />
-          </div>
-          <FunnelChart data={funnelData} width={450} height={200} />
-          <div className="mt-4 flex justify-around text-sm">
-            <div className="text-center">
-              <p className="text-gray-500">View → Cart</p>
-              <p className="font-semibold text-lg text-merogreen">
-                {viewToCartRate}%
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">Cart → Purchase</p>
-              <p className="font-semibold text-lg text-merogreen">
-                {cartToPurchaseRate}%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Daily Trends */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Daily Views Trend</h3>
+            <h3 className="font-semibold text-gray-900">Revenue Trend</h3>
             <TrendingUp size={20} className="text-gray-400" />
           </div>
-          <LineChart
-            data={trendsArray}
-            xKey="date"
-            yKey="views"
-            width={450}
-            height={250}
-            color="#3b82f6"
-          />
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats?.revenueChartData || []}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(v) =>
+                    `Rs.${v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v}`
+                  }
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  fill="url(#colorRevenue)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
+        {/* Order Status Distribution */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">
+              Order Status Distribution
+            </h3>
+            <Package size={20} className="text-gray-400" />
+          </div>
+          <div className="h-64 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPie>
+                <Pie
+                  data={stats?.orderStatusData || []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                >
+                  {stats?.orderStatusData?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </RechartsPie>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Second Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Customer Segments */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Customer Segments</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleRefreshSegments}
-                disabled={refreshing}
-                className="text-sm text-merogreen hover:text-green-700 flex items-center gap-1"
-              >
-                <RefreshCw
-                  size={14}
-                  className={refreshing ? "animate-spin" : ""}
-                />
-                Recalculate
-              </button>
-              <PieChartIcon size={20} className="text-gray-400" />
-            </div>
+            <button
+              onClick={() => navigate("/admin/analytics/segments")}
+              className="text-sm text-merogreen hover:text-green-700 flex items-center gap-1"
+            >
+              View All <ChevronRight size={16} />
+            </button>
           </div>
-          <PieChart
-            data={segmentDistData}
-            nameKey="name"
-            valueKey="count"
-            width={250}
-            height={250}
-          />
+          <div className="h-64 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPie>
+                <Pie
+                  data={segmentChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {segmentChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </RechartsPie>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Top Products */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">
+              Top Selling Products
+            </h3>
+            <Package size={20} className="text-gray-400" />
+          </div>
+          <div className="overflow-y-auto max-h-64">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-white">
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-500">
+                    Product
+                  </th>
+                  <th className="text-right py-2 px-2 text-sm font-medium text-gray-500">
+                    Sold
+                  </th>
+                  <th className="text-right py-2 px-2 text-sm font-medium text-gray-500">
+                    Revenue
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats?.topProducts?.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-50 hover:bg-gray-50"
+                  >
+                    <td className="py-2 px-2">
+                      <span className="font-medium text-gray-900 text-sm">
+                        {item.name}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right">
+                      <span className="text-gray-600 text-sm">
+                        {item.quantity}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right">
+                      <span className="font-medium text-merogreen text-sm">
+                        Rs.{item.revenue?.toLocaleString()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Top Products */}
+      {/* Segment Insights */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Top Viewed Products</h3>
-          <Package size={20} className="text-gray-400" />
+          <h3 className="font-semibold text-gray-900">Customer Insights</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-                  Product
-                </th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
-                  Views
-                </th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
-                  Category
-                </th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">
-                  Price
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {analytics?.topViewedProducts?.slice(0, 5).map((item, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-50 hover:bg-gray-50"
-                >
-                  <td className="py-3 px-4">
-                    <span className="font-medium text-gray-900">
-                      {item.product?.name || "Unknown"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <span className="text-gray-600">
-                      {item.views?.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <span className="text-sm text-gray-500">
-                      {item.product?.category}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <span className="font-medium text-merogreen">
-                      Rs. {item.product?.price}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Segment Details */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900">Segment Analysis</h3>
-          <button
-            onClick={() => navigate("/admin/analytics/segments")}
-            className="text-sm text-merogreen hover:text-green-700 flex items-center gap-1"
-          >
-            View All <ChevronRight size={16} />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {segments?.distribution?.slice(0, 6).map((segment, index) => (
-            <div
-              key={index}
-              className="p-4 bg-gray-50 rounded-lg border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-gray-900">{segment._id}</span>
-                <span className="text-sm bg-merogreen/10 text-merogreen px-2 py-1 rounded">
-                  {segment.count} customers
-                </span>
-              </div>
-              <div className="text-sm text-gray-500">
-                <p>Avg RFM Score: {segment.avgRfmScore?.toFixed(1) || "N/A"}</p>
-                <p>Avg Monetary: Rs. {segment.avgMonetary?.toFixed(0) || 0}</p>
-              </div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+            <p className="text-sm text-green-600">Champions</p>
+            <p className="text-2xl font-bold text-green-700">
+              {segments?.insights?.championsCount || 0}
+            </p>
+            <p className="text-xs text-green-500">High value customers</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <p className="text-sm text-blue-600">New Customers</p>
+            <p className="text-2xl font-bold text-blue-700">
+              {segments?.insights?.newCustomersCount || 0}
+            </p>
+            <p className="text-xs text-blue-500">Recent first purchase</p>
+          </div>
+          <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+            <p className="text-sm text-red-600">At Risk</p>
+            <p className="text-2xl font-bold text-red-700">
+              {segments?.insights?.atRiskCount || 0}
+            </p>
+            <p className="text-xs text-red-500">Need re-engagement</p>
+          </div>
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+            <p className="text-sm text-purple-600">Avg Customer Value</p>
+            <p className="text-2xl font-bold text-purple-700">
+              Rs.{segments?.insights?.avgCustomerValue?.toFixed(0) || 0}
+            </p>
+            <p className="text-xs text-purple-500">Lifetime value</p>
+          </div>
         </div>
       </div>
 
       {/* Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <button
           onClick={() => navigate("/admin/analytics/forecasting")}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left hover:shadow-md transition"
@@ -444,7 +463,9 @@ const AnalyticsDashboard = () => {
               <h4 className="font-semibold text-gray-900">
                 Demand Forecasting
               </h4>
-              <p className="text-sm text-gray-500">Prophet-based predictions</p>
+              <p className="text-sm text-gray-500">
+                Sales predictions & stock alerts
+              </p>
             </div>
           </div>
         </button>
@@ -460,7 +481,7 @@ const AnalyticsDashboard = () => {
             <div>
               <h4 className="font-semibold text-gray-900">Dynamic Pricing</h4>
               <p className="text-sm text-gray-500">
-                ML-powered price optimization
+                Price optimization suggestions
               </p>
             </div>
           </div>
@@ -476,7 +497,7 @@ const AnalyticsDashboard = () => {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">Customer Segments</h4>
-              <p className="text-sm text-gray-500">RFM & K-Means analysis</p>
+              <p className="text-sm text-gray-500">RFM analysis & targeting</p>
             </div>
           </div>
         </button>

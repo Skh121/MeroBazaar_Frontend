@@ -15,10 +15,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layout/AdminLayout";
 import { useAuthStore } from "../../../../store/lib/authStore";
-import {
-  getCustomerSegments,
-  recalculateSegments,
-} from "../../../../store/api/analyticsApi";
+import { getAdminCustomerSegments } from "../../../../store/api/analyticsApi";
 import { DonutChart, BarChart } from "../../../shared/Charts";
 
 const CustomerSegmentsPage = () => {
@@ -26,11 +23,12 @@ const CustomerSegmentsPage = () => {
   const { token, user } = useAuthStore();
 
   const [loading, setLoading] = useState(true);
-  const [recalculating, setRecalculating] = useState(false);
   const [segments, setSegments] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState(null);
   const [selectedSegment, setSelectedSegment] = useState(null);
+  const [insights, setInsights] = useState(null);
+  const [segmentColors, setSegmentColors] = useState({});
 
   useEffect(() => {
     if (!token || user?.role !== "admin") {
@@ -44,28 +42,16 @@ const CustomerSegmentsPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getCustomerSegments(token, { limit: 100 });
-      setSegments(data.segmentSummary || data.summary || null);
-      setCustomers(data.customers || data || []);
+      const data = await getAdminCustomerSegments(token);
+      setSegments(data.segments || {});
+      setCustomers(data.customers || []);
+      setInsights(data.insights || {});
+      setSegmentColors(data.segmentColors || {});
     } catch (err) {
       console.error("Failed to fetch segments:", err);
       setError("Failed to load customer segments");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRecalculate = async () => {
-    try {
-      setRecalculating(true);
-      setError(null);
-      await recalculateSegments(token);
-      await fetchSegments();
-    } catch (err) {
-      console.error("Failed to recalculate segments:", err);
-      setError("Failed to recalculate segments");
-    } finally {
-      setRecalculating(false);
     }
   };
 
@@ -111,41 +97,23 @@ const CustomerSegmentsPage = () => {
   };
 
   const getChartColor = (segment) => {
-    switch (segment?.toLowerCase()) {
-      case "champions":
-      case "champion":
-        return "#EAB308";
-      case "loyal":
-      case "loyal customers":
-        return "#EF4444";
-      case "at risk":
-      case "at_risk":
-        return "#F97316";
-      case "lost":
-      case "churned":
-        return "#6B7280";
-      case "potential":
-      case "potential loyalists":
-        return "#3B82F6";
-      default:
-        return "#10B981";
-    }
+    return segmentColors[segment] || "#6B7280";
   };
 
   // Process segments data for charts
   const segmentChartData = segments
     ? Object.entries(segments).map(([name, data]) => ({
-        name: name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-        value: data.count || data,
+        name,
+        value: data.count || 0,
         color: getChartColor(name),
       }))
     : [];
 
   const rfmChartData = segments
     ? Object.entries(segments).map(([name, data]) => ({
-        name: name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-        avgRfm: data.avgRfmScore?.toFixed(1) || 0,
-        avgMonetary: Math.round(data.avgMonetary || 0),
+        name,
+        avgValue: Math.round(data.avgOrderValue || 0),
+        totalRevenue: Math.round(data.totalRevenue || 0),
       }))
     : [];
 
@@ -177,19 +145,18 @@ const CustomerSegmentsPage = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               Customer Segments
             </h1>
-            <p className="text-gray-500">RFM & K-Means clustering analysis</p>
+            <p className="text-gray-500">
+              RFM analysis based on order history ({customers.length} customers)
+            </p>
           </div>
         </div>
         <button
-          onClick={handleRecalculate}
-          disabled={recalculating}
-          className="flex items-center gap-2 px-4 py-2 bg-merogreen text-white rounded-lg hover:bg-merogreen-dark transition disabled:opacity-50"
+          onClick={fetchSegments}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-merogreen text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
         >
-          <RefreshCw
-            size={16}
-            className={recalculating ? "animate-spin" : ""}
-          />
-          {recalculating ? "Recalculating..." : "Recalculate Segments"}
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+          Refresh
         </button>
       </div>
 
@@ -247,42 +214,25 @@ const CustomerSegmentsPage = () => {
             ))}
           </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Distribution Chart */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Segment Distribution
-              </h3>
-              <div className="h-64">
-                <DonutChart
-                  data={segmentChartData}
-                  dataKey="value"
-                  nameKey="name"
-                />
+          {/* Insights Cards */}
+          {insights && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+                <p className="text-sm text-red-600">At Risk</p>
+                <p className="text-2xl font-bold text-red-700">
+                  {insights.atRiskCount || 0}
+                </p>
+                <p className="text-xs text-red-500">Need re-engagement</p>
+              </div>
+              <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                <p className="text-sm text-purple-600">Avg Customer Value</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  Rs.{insights.avgCustomerValue?.toFixed(0) || 0}
+                </p>
+                <p className="text-xs text-purple-500">Lifetime value</p>
               </div>
             </div>
-
-            {/* RFM Scores Chart */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Average RFM Scores by Segment
-              </h3>
-              <div className="h-64">
-                <BarChart
-                  data={rfmChartData}
-                  xKey="name"
-                  bars={[
-                    {
-                      dataKey: "avgRfm",
-                      color: "#10B981",
-                      name: "Avg RFM Score",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Customer Table */}
           {customers.length > 0 && (
@@ -290,8 +240,8 @@ const CustomerSegmentsPage = () => {
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="font-semibold text-gray-900">
                   {selectedSegment
-                    ? `${selectedSegment.replace(/_/g, " ")} Customers`
-                    : "All Customers"}
+                    ? `${selectedSegment} Customers`
+                    : "Top Customers by Revenue"}
                 </h3>
               </div>
               <div className="overflow-x-auto">
@@ -305,16 +255,16 @@ const CustomerSegmentsPage = () => {
                         Segment
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        RFM Score
+                        Orders
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Recency
+                        Total Spent
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Frequency
+                        Avg Order
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Monetary
+                        Last Order
                       </th>
                     </tr>
                   </thead>
@@ -323,12 +273,9 @@ const CustomerSegmentsPage = () => {
                       .filter(
                         (c) => !selectedSegment || c.segment === selectedSegment
                       )
-                      .slice(0, 20)
+                      .slice(0, 30)
                       .map((customer, index) => (
-                        <tr
-                          key={customer._id || index}
-                          className="hover:bg-gray-50"
-                        >
+                        <tr key={index} className="hover:bg-gray-50">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -336,12 +283,10 @@ const CustomerSegmentsPage = () => {
                               </div>
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {customer.user?.fullName ||
-                                    customer.fullName ||
-                                    "Unknown"}
+                                  {customer.user?.fullName || "Unknown"}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {customer.user?.email || customer.email || ""}
+                                  {customer.user?.email || ""}
                                 </p>
                               </div>
                             </div>
@@ -352,33 +297,20 @@ const CustomerSegmentsPage = () => {
                                 customer.segment
                               )}`}
                             >
-                              {customer.segment?.replace(/_/g, " ") ||
-                                "Unknown"}
+                              {customer.segment || "Unknown"}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <Star size={14} className="text-yellow-500" />
-                              <span className="font-medium">
-                                {customer.rfmScore?.toFixed(1) || "N/A"}
-                              </span>
-                            </div>
+                          <td className="px-6 py-4 text-gray-600">
+                            {customer.totalOrders || 0}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900 font-medium">
+                            Rs.{customer.totalSpent?.toLocaleString() || "0"}
                           </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {customer.recencyScore?.toFixed(0) ||
-                              customer.recency ||
-                              "N/A"}
+                            Rs.{customer.avgOrderValue?.toFixed(0) || "0"}
                           </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {customer.frequencyScore?.toFixed(0) ||
-                              customer.frequency ||
-                              "N/A"}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            Rs.{" "}
-                            {customer.monetaryValue?.toLocaleString() ||
-                              customer.monetary?.toLocaleString() ||
-                              "0"}
+                            {customer.daysSinceLastOrder || 0} days ago
                           </td>
                         </tr>
                       ))}
